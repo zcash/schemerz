@@ -147,7 +147,7 @@ where
     let mut migrator = Migrator::new(adapter);
 
     migrator
-        .register_multiple(vec![migration1, migration2, migration3])
+        .register_multiple(vec![migration1, migration2, migration3].into_iter())
         .expect("Migration registration failed");
 
     migrator
@@ -205,7 +205,7 @@ where
     let mut migrator = Migrator::new(adapter);
 
     migrator
-        .register_multiple(vec![migration1, migration2, migration3, migration4])
+        .register_multiple(vec![migration1, migration2, migration3, migration4].into_iter())
         .expect("Migration registration failed");
 
     migrator
@@ -302,9 +302,9 @@ where
     let mut migrator = Migrator::new(adapter);
 
     migrator
-        .register_multiple(vec![
-            migration1, migration2, migration3, migration4, migration5,
-        ])
+        .register_multiple(
+            vec![migration1, migration2, migration3, migration4, migration5].into_iter(),
+        )
         .expect("Migration registration failed");
 
     migrator

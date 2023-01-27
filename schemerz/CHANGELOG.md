@@ -43,6 +43,8 @@ and this library adheres to Rust's notion of
     with the index type (which defaults to `uuid::Uuid`).
   - The individual tests in the `schemerz::testing` module now require an
     adapter with an `I: Clone + FromStr + Debug + Display + Hash + Eq` bound.
+- `schemerz::Migrator::register_multiple` now takes an iterator of migrations
+  instead of a `Vec`.
 
 ### Removed
 - `schemerz::test_schemer_adapter` (use `test_schemerz_adapter` instead).

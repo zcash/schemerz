@@ -203,7 +203,7 @@ where
     /// Register multiple migrations into the dependency graph.
     pub fn register_multiple(
         &mut self,
-        migrations: Vec<Box<T::MigrationType>>,
+        migrations: impl Iterator<Item = Box<T::MigrationType>>,
     ) -> Result<(), MigratorError<I, T::Error>> {
         for migration in migrations {
             let id = migration.id();
