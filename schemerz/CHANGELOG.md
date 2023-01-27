@@ -16,8 +16,18 @@ and this library adheres to Rust's notion of
 
 ### Added
 - `schemerz::test_schemerz_adapter`
+- Blanket implementation of `schemerz::Migration` for the following types:
+  - `Box<T>`
+  - `Rc<T>`
+  - `Arc<T>`
 
 ### Changed
+- `schemerz::Migrator` no longer uses `Box` in its API:
+  - `schemerz::Adapter::MigrationType` must now be `Sized`.
+  - `schemerz::Migrator::{register, register_multiple}` now take the migrations
+    without a `Box` wrapper`.
+  - `schemerz::TestAdapter::mock` now returns the migration without a `Box`
+    wrapper.
 - `schemerz::Migration` is now generic over its index type, to make writing
   tests easier (as they can now use an alternative index type like `usize`).
   Production migrations should still use `uuid::Uuid` for resiliency.

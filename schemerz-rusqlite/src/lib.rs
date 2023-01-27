@@ -141,7 +141,7 @@ impl<'a, E> Adapter<Uuid> for RusqliteAdapter<'a, E>
 where
     E: From<RusqliteError> + Sync + Send + Error + 'static,
 {
-    type MigrationType = dyn RusqliteMigration<Error = E>;
+    type MigrationType = Box<dyn RusqliteMigration<Error = E>>;
 
     type Error = E;
 
@@ -203,7 +203,7 @@ mod tests {
     }
 
     impl<'a> TestAdapter<Uuid> for RusqliteAdapter<'a, RusqliteError> {
-        fn mock(id: Uuid, dependencies: HashSet<Uuid>) -> Box<Self::MigrationType> {
+        fn mock(id: Uuid, dependencies: HashSet<Uuid>) -> Self::MigrationType {
             Box::new(TestMigration::new(id, dependencies))
         }
     }

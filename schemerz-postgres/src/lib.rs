@@ -128,7 +128,7 @@ impl<'a> PostgresAdapter<'a> {
 }
 
 impl<'a> Adapter<Uuid> for PostgresAdapter<'a> {
-    type MigrationType = dyn PostgresMigration;
+    type MigrationType = Box<dyn PostgresMigration>;
 
     type Error = PostgresAdapterError;
 
@@ -179,7 +179,7 @@ mod tests {
     impl PostgresMigration for TestMigration<Uuid> {}
 
     impl<'a> TestAdapter<Uuid> for PostgresAdapter<'a> {
-        fn mock(id: Uuid, dependencies: HashSet<Uuid>) -> Box<Self::MigrationType> {
+        fn mock(id: Uuid, dependencies: HashSet<Uuid>) -> Self::MigrationType {
             Box::new(TestMigration::new(id, dependencies))
         }
     }

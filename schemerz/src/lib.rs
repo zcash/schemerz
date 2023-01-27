@@ -12,6 +12,8 @@
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::fmt::{Debug, Display};
 use std::hash::Hash;
+use std::rc::Rc;
+use std::sync::Arc;
 
 use daggy::petgraph::EdgeDirection;
 use daggy::Dag;
@@ -33,6 +35,57 @@ pub trait Migration<I> {
 
     /// User-targeted description of this migration.
     fn description(&self) -> &'static str;
+}
+
+impl<I, T> Migration<I> for Box<T>
+where
+    T: Migration<I> + ?Sized,
+{
+    fn id(&self) -> I {
+        self.as_ref().id()
+    }
+
+    fn dependencies(&self) -> HashSet<I> {
+        self.as_ref().dependencies()
+    }
+
+    fn description(&self) -> &'static str {
+        self.as_ref().description()
+    }
+}
+
+impl<I, T> Migration<I> for Rc<T>
+where
+    T: Migration<I> + ?Sized,
+{
+    fn id(&self) -> I {
+        self.as_ref().id()
+    }
+
+    fn dependencies(&self) -> HashSet<I> {
+        self.as_ref().dependencies()
+    }
+
+    fn description(&self) -> &'static str {
+        self.as_ref().description()
+    }
+}
+
+impl<I, T> Migration<I> for Arc<T>
+where
+    T: Migration<I> + ?Sized,
+{
+    fn id(&self) -> I {
+        self.as_ref().id()
+    }
+
+    fn dependencies(&self) -> HashSet<I> {
+        self.as_ref().dependencies()
+    }
+
+    fn description(&self) -> &'static str {
+        self.as_ref().description()
+    }
 }
 
 /// Create a trivial implementation of `Migration` for a type.
@@ -116,7 +169,7 @@ impl Display for MigrationDirection {
 /// backend.
 pub trait Adapter<I> {
     /// Type migrations must implement for this adapter.
-    type MigrationType: Migration<I> + ?Sized;
+    type MigrationType: Migration<I>;
 
     /// Type of errors returned by this adapter.
     type Error: std::error::Error + 'static;
@@ -165,7 +218,7 @@ pub enum MigratorError<I, T: std::error::Error + 'static> {
 /// Primary schemerz type for defining and applying migrations.
 pub struct Migrator<I, T: Adapter<I>> {
     adapter: T,
-    dependencies: Dag<Box<T::MigrationType>, ()>,
+    dependencies: Dag<T::MigrationType, ()>,
     id_map: HashMap<I, daggy::NodeIndex>,
 }
 
@@ -186,7 +239,7 @@ where
     /// Register a migration into the dependency graph.
     pub fn register(
         &mut self,
-        migration: Box<T::MigrationType>,
+        migration: T::MigrationType,
     ) -> Result<(), MigratorError<I, T::Error>> {
         let id = migration.id();
         debug!("Registering migration {}", id);
@@ -203,7 +256,7 @@ where
     /// Register multiple migrations into the dependency graph.
     pub fn register_multiple(
         &mut self,
-        migrations: impl Iterator<Item = Box<T::MigrationType>>,
+        migrations: impl Iterator<Item = T::MigrationType>,
     ) -> Result<(), MigratorError<I, T::Error>> {
         for migration in migrations {
             let id = migration.id();
@@ -403,7 +456,7 @@ pub mod tests {
     struct DefaultTestAdapterError;
 
     impl Adapter<Uuid> for DefaultTestAdapter {
-        type MigrationType = dyn Migration<Uuid>;
+        type MigrationType = TestMigration<Uuid>;
 
         type Error = DefaultTestAdapterError;
 
@@ -423,8 +476,8 @@ pub mod tests {
     }
 
     impl TestAdapter<Uuid> for DefaultTestAdapter {
-        fn mock(id: Uuid, dependencies: HashSet<Uuid>) -> Box<Self::MigrationType> {
-            Box::new(TestMigration::new(id, dependencies))
+        fn mock(id: Uuid, dependencies: HashSet<Uuid>) -> Self::MigrationType {
+            TestMigration::new(id, dependencies)
         }
     }
 

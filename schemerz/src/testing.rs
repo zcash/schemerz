@@ -11,7 +11,7 @@ pub trait TestAdapter<I>: Adapter<I> {
     ///
     /// For convenience adapters can implement their migration traits on
     /// `TestMigration` and construct those here.
-    fn mock(id: I, dependencies: HashSet<I>) -> Box<Self::MigrationType>;
+    fn mock(id: I, dependencies: HashSet<I>) -> Self::MigrationType;
 }
 
 /// A trivial struct implementing `Migration` on which adapters can build their
