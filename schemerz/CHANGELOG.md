@@ -9,6 +9,11 @@ and this library adheres to Rust's notion of
 <!-- next-header -->
 ## [Unreleased]
 
+### Fixed
+- `schemerz::Migrator::{register, register_multiple}` can now register dependent
+  migrations before their dependencies. Previously this would result in a graph
+  with missing edges, leading to some migrations not being applied.
+
 ### Added
 - `schemerz::test_schemerz_adapter`
 

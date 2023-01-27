@@ -69,6 +69,7 @@ macro_rules! test_schemerz_adapter {
             test_migration_chain,
             test_multi_component_dag,
             test_branching_dag,
+            test_migration_chain_reversed,
         );
     };
     ($setup:stmt, $constructor:expr, $($test_fn:ident),* $(,)*) => {
@@ -330,5 +331,67 @@ where
         assert!(!applied.contains(&uuid3));
         assert!(!applied.contains(&uuid4));
         assert!(!applied.contains(&uuid5));
+    }
+}
+
+/// Test the partial application and reversion of a chain of three dependent
+/// migrations, inserted in reverse order.
+pub fn test_migration_chain_reversed<I, A>(adapter: A)
+where
+    I: Clone + FromStr + Debug + Display + Hash + Eq,
+    I::Err: Debug,
+    A: TestAdapter<I>,
+{
+    let migration1 = A::mock(
+        I::from_str("bc960dc8-0e4a-4182-a62a-8e776d1e2b30").unwrap(),
+        HashSet::new(),
+    );
+    let migration2 = A::mock(
+        I::from_str("4885e8ab-dafa-4d76-a565-2dee8b04ef60").unwrap(),
+        vec![migration1.id()].into_iter().collect(),
+    );
+    let migration3 = A::mock(
+        I::from_str("c5d07448-851f-45e8-8fa7-4823d5250609").unwrap(),
+        vec![migration2.id()].into_iter().collect(),
+    );
+
+    let uuid3 = migration3.id();
+    let uuid2 = migration2.id();
+    let uuid1 = migration1.id();
+
+    let mut migrator = Migrator::new(adapter);
+
+    migrator
+        .register(migration3)
+        .expect("Migration registration failed");
+
+    migrator
+        .register(migration2)
+        .expect("Migration registration failed");
+
+    migrator
+        .register(migration1)
+        .expect("Migration registration failed");
+
+    migrator
+        .up(Some(uuid2.clone()))
+        .expect("Up migration failed");
+
+    {
+        let applied = migrator.adapter.applied_migrations().unwrap();
+        assert!(applied.contains(&uuid1));
+        assert!(applied.contains(&uuid2));
+        assert!(!applied.contains(&uuid3));
+    }
+
+    migrator
+        .down(Some(uuid1.clone()))
+        .expect("Down migration failed");
+
+    {
+        let applied = migrator.adapter.applied_migrations().unwrap();
+        assert!(applied.contains(&uuid1));
+        assert!(!applied.contains(&uuid2));
+        assert!(!applied.contains(&uuid3));
     }
 }

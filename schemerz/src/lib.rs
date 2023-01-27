@@ -193,30 +193,14 @@ where
         if self.id_map.contains_key(&id) {
             return Err(MigratorError::Dependency(DependencyError::DuplicateId(id)));
         }
-        let depends = migration.dependencies();
+
         let migration_idx = self.dependencies.add_node(migration);
-
-        for d in depends {
-            let parent_idx = self.id_map.get(&d).ok_or(MigratorError::Dependency(
-                DependencyError::UnknownId(d.clone()),
-            ))?;
-            self.dependencies
-                .add_edge(*parent_idx, migration_idx, ())
-                .map_err(|_| {
-                    MigratorError::Dependency(DependencyError::Cycle {
-                        from: d,
-                        to: id.clone(),
-                    })
-                })?;
-        }
-
         self.id_map.insert(id, migration_idx);
 
         Ok(())
     }
 
-    /// Register multiple migrations into the dependency graph. The `Vec` does
-    /// not need to be order by dependency structure.
+    /// Register multiple migrations into the dependency graph.
     pub fn register_multiple(
         &mut self,
         migrations: Vec<Box<T::MigrationType>>,
@@ -227,12 +211,23 @@ where
             if self.id_map.contains_key(&id) {
                 return Err(MigratorError::Dependency(DependencyError::DuplicateId(id)));
             }
+
             let migration_idx = self.dependencies.add_node(migration);
             self.id_map.insert(id, migration_idx);
         }
 
-        for (id, migration_idx) in &self.id_map {
-            let depends = self.dependencies[*migration_idx].dependencies();
+        Ok(())
+    }
+
+    /// Creates the edges for the current migrations into the dependency graph.
+    fn register_edges(&mut self) -> Result<(), MigratorError<I, T::Error>> {
+        for (id, migration_idx) in self.id_map.iter() {
+            let depends = self
+                .dependencies
+                .node_weight(*migration_idx)
+                .expect("We registered these nodes")
+                .dependencies();
+
             for d in depends {
                 let parent_idx = self.id_map.get(&d).ok_or(MigratorError::Dependency(
                     DependencyError::UnknownId(d.clone()),
@@ -247,7 +242,6 @@ where
                     })?;
             }
         }
-
         Ok(())
     }
 
@@ -302,6 +296,10 @@ where
         } else {
             info!("Migrating everything");
         }
+
+        // Register the edges
+        self.register_edges()?;
+
         let target_ids = self
             .induced_stream(to, EdgeDirection::Incoming)
             .map_err(MigratorError::Dependency)?;
@@ -343,6 +341,10 @@ where
         } else {
             info!("Migrating everything");
         }
+
+        // Register the edges
+        self.register_edges()?;
+
         let mut target_ids = self
             .induced_stream(to.clone(), EdgeDirection::Outgoing)
             .map_err(MigratorError::Dependency)?;
