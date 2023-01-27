@@ -12,6 +12,33 @@ and this library adheres to Rust's notion of
 ### Added
 - `schemerz::test_schemerz_adapter`
 
+### Changed
+- `schemerz::Migration` is now generic over its index type, to make writing
+  tests easier (as they can now use an alternative index type like `usize`).
+  Production migrations should still use `uuid::Uuid` for resiliency.
+  - The following traits and structs now have a generic parameter `I`:
+    - `Migration`
+    - `Adapter`
+    - `testing::TestAdapter`
+    - `testing::TestMigration`
+  - The `Migrator` struct now has an `I: Clone + Display + Hash + Eq` parameter.
+  - The following methods now take `I` as an argument instead of `uuid::Uuid`:
+    - `Migrator::up`
+    - `Migrator::down`
+  - The return types of the following methods now involve `I` instead of
+    `uuid::Uuid`:
+    - `Migration::id`
+    - `Migration::dependencies`
+    - `Adapter::applied_migrations`
+    - `testing::TestAdapter::mock`
+    - `testing::TestMigration::new`
+  - The `schemerz::{DependencyError, MigratorError>` enums now have a generic
+    parameter `I` that replaces uses of `uuid::Uuid`.
+  - The `schemerz::migration` macro now supports an optional initial argument
+    with the index type (which defaults to `uuid::Uuid`).
+  - The individual tests in the `schemerz::testing` module now require an
+    adapter with an `I: Clone + FromStr + Debug + Display + Hash + Eq` bound.
+
 ### Removed
 - `schemerz::test_schemer_adapter` (use `test_schemerz_adapter` instead).
 

@@ -15,12 +15,12 @@
 //! use rusqlite::{params, Connection, Transaction, Error as RusqliteError};
 //! use schemerz::{Migration, Migrator};
 //! use schemerz_rusqlite::{RusqliteAdapter, RusqliteAdapterError, RusqliteMigration};
-//! use uuid::Uuid;
+//! use uuid::uuid;
 //!
 //! struct MyExampleMigration;
 //! migration!(
 //!     MyExampleMigration,
-//!     "4885e8ab-dafa-4d76-a565-2dee8b04ef60",
+//!     uuid!("4885e8ab-dafa-4d76-a565-2dee8b04ef60"),
 //!     [],
 //!     "An example migration without dependencies.");
 //!
@@ -62,7 +62,7 @@ use uuid::Uuid;
 use schemerz::{Adapter, Migration};
 
 /// SQlite-specific trait for schema migrations.
-pub trait RusqliteMigration: Migration {
+pub trait RusqliteMigration: Migration<Uuid> {
     type Error: From<RusqliteError>;
 
     /// Apply a migration to the database using a transaction.
@@ -137,8 +137,9 @@ impl<'a, E> RusqliteAdapter<'a, E> {
     }
 }
 
-impl<'a, E: From<RusqliteError> + Sync + Send + Error + 'static> Adapter
-    for RusqliteAdapter<'a, E>
+impl<'a, E> Adapter<Uuid> for RusqliteAdapter<'a, E>
+where
+    E: From<RusqliteError> + Sync + Send + Error + 'static,
 {
     type MigrationType = dyn RusqliteMigration<Error = E>;
 
@@ -197,11 +198,11 @@ mod tests {
     use schemerz::test_schemerz_adapter;
     use schemerz::testing::*;
 
-    impl RusqliteMigration for TestMigration {
+    impl RusqliteMigration for TestMigration<Uuid> {
         type Error = RusqliteError;
     }
 
-    impl<'a> TestAdapter for RusqliteAdapter<'a, RusqliteError> {
+    impl<'a> TestAdapter<Uuid> for RusqliteAdapter<'a, RusqliteError> {
         fn mock(id: Uuid, dependencies: HashSet<Uuid>) -> Box<Self::MigrationType> {
             Box::new(TestMigration::new(id, dependencies))
         }
