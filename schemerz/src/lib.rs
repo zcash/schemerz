@@ -17,6 +17,7 @@ use std::sync::Arc;
 
 use daggy::petgraph::EdgeDirection;
 use daggy::Dag;
+use itertools::Itertools;
 use log::{debug, info};
 use thiserror::Error;
 
@@ -307,12 +308,12 @@ where
         &self,
         id: Option<I>,
         dir: EdgeDirection,
-    ) -> Result<HashSet<daggy::NodeIndex>, DependencyError<I>> {
-        let mut target_ids = HashSet::new();
+    ) -> Result<Vec<daggy::NodeIndex>, DependencyError<I>> {
+        let mut target_ids = Vec::new();
         match id {
             Some(id) => {
                 if let Some(id) = self.id_map.get(&id) {
-                    target_ids.insert(*id);
+                    target_ids.push(*id);
                 } else {
                     return Err(DependencyError::UnknownId(id));
                 }
@@ -323,11 +324,11 @@ where
 
         let mut to_visit: VecDeque<_> = target_ids.iter().cloned().collect();
         while let Some(idx) = to_visit.pop_front() {
-            target_ids.insert(idx);
+            target_ids.push(idx);
             to_visit.extend(self.dependencies.graph().neighbors_directed(idx, dir));
         }
 
-        Ok(target_ids)
+        Ok(target_ids.into_iter().unique().rev().collect())
     }
 
     /// Apply migrations as necessary to so that the specified migration is
