@@ -18,6 +18,8 @@ and this library adheres to Rust's notion of
 
 ### Added
 - `schemerz::test_schemerz_adapter`
+  - Compared to the previous `test_schemer_adapter`, this requires an additional
+    argument with an infinite iterator of valid indices for the tests to use.
 - Blanket implementation of `schemerz::Migration` for the following types:
   - `Box<T>`
   - `Rc<T>`
@@ -54,7 +56,8 @@ and this library adheres to Rust's notion of
   - The `schemerz::migration` macro now supports an optional initial argument
     with the index type (which defaults to `uuid::Uuid`).
   - The individual tests in the `schemerz::testing` module now require an
-    adapter with an `I: Clone + FromStr + Debug + Display + Hash + Eq` bound.
+    adapter with an `I: Clone + FromStr + Debug + Display + Hash + Eq` bound,
+    and each take an additional argument `T: Iterator<Item = I>`.
 - `schemerz::Migrator::register_multiple` now takes an iterator of migrations
   instead of a `Vec`.
 

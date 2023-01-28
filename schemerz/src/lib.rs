@@ -431,13 +431,11 @@ where
 
 #[cfg(test)]
 pub mod tests {
-    use uuid::Uuid;
-
     use super::testing::*;
     use super::*;
 
     struct DefaultTestAdapter {
-        applied_migrations: HashSet<Uuid>,
+        applied_migrations: HashSet<usize>,
     }
 
     impl DefaultTestAdapter {
@@ -452,12 +450,12 @@ pub mod tests {
     #[error("An error occurred.")]
     struct DefaultTestAdapterError;
 
-    impl Adapter<Uuid> for DefaultTestAdapter {
-        type MigrationType = TestMigration<Uuid>;
+    impl Adapter<usize> for DefaultTestAdapter {
+        type MigrationType = TestMigration<usize>;
 
         type Error = DefaultTestAdapterError;
 
-        fn applied_migrations(&mut self) -> Result<HashSet<Uuid>, Self::Error> {
+        fn applied_migrations(&mut self) -> Result<HashSet<usize>, Self::Error> {
             Ok(self.applied_migrations.clone())
         }
 
@@ -472,11 +470,11 @@ pub mod tests {
         }
     }
 
-    impl TestAdapter<Uuid> for DefaultTestAdapter {
-        fn mock(id: Uuid, dependencies: HashSet<Uuid>) -> Self::MigrationType {
+    impl TestAdapter<usize> for DefaultTestAdapter {
+        fn mock(id: usize, dependencies: HashSet<usize>) -> Self::MigrationType {
             TestMigration::new(id, dependencies)
         }
     }
 
-    test_schemerz_adapter!(DefaultTestAdapter::new());
+    test_schemerz_adapter!(DefaultTestAdapter::new(), 0..);
 }

@@ -218,7 +218,13 @@ mod tests {
         adapter
     }
 
+    fn uuid_iter() -> impl Iterator<Item = Uuid> {
+        (0..).map(|v| Uuid::from_fields(v as u32, v, v, &[0; 8]))
+    }
+
     test_schemerz_adapter!(
         let mut conn = build_test_connection(),
-        build_test_adapter(&mut conn));
+        build_test_adapter(&mut conn),
+        uuid_iter(),
+    );
 }

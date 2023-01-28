@@ -60,11 +60,11 @@ impl<I: Clone> Migration<I> for TestMigration<I> {
 /// ```
 #[macro_export]
 macro_rules! test_schemerz_adapter {
-    ($constructor:expr) => {
-        test_schemerz_adapter!({}, $constructor);
+    ($constructor:expr, $id_ter:expr) => {
+        test_schemerz_adapter!({}, $constructor, $id_ter);
     };
-    ($setup:stmt, $constructor:expr) => {
-        test_schemerz_adapter!($setup, $constructor,
+    ($setup:stmt, $constructor:expr, $id_ter:expr) => {
+        test_schemerz_adapter!($setup, $constructor, $id_ter,
             test_single_migration,
             test_migration_chain,
             test_multi_component_dag,
@@ -72,29 +72,27 @@ macro_rules! test_schemerz_adapter {
             test_migration_chain_reversed,
         );
     };
-    ($setup:stmt, $constructor:expr, $($test_fn:ident),* $(,)*) => {
+    ($setup:stmt, $constructor:expr, $id_ter:expr, $($test_fn:ident),* $(,)*) => {
         $(
             #[test]
             fn $test_fn() {
                 $setup
                 let adapter = $constructor;
-                $crate::testing::$test_fn(adapter);
+                $crate::testing::$test_fn(adapter, $id_ter);
             }
         )*
     }
 }
 
 /// Test the application and reversion of a singleton migration.
-pub fn test_single_migration<I, A>(adapter: A)
+pub fn test_single_migration<I, A, T>(adapter: A, mut id_iter: T)
 where
     I: Clone + FromStr + Debug + Display + Hash + Eq,
     I::Err: Debug,
     A: TestAdapter<I>,
+    T: Iterator<Item = I>,
 {
-    let migration1 = A::mock(
-        I::from_str("bc960dc8-0e4a-4182-a62a-8e776d1e2b30").unwrap(),
-        HashSet::new(),
-    );
+    let migration1 = A::mock(id_iter.next().unwrap(), HashSet::new());
     let uuid1 = migration1.id();
 
     let mut migrator: Migrator<I, A> = Migrator::new(adapter);
@@ -121,22 +119,20 @@ where
 
 /// Test the partial application and reversion of a chain of three dependent
 /// migrations.
-pub fn test_migration_chain<I, A>(adapter: A)
+pub fn test_migration_chain<I, A, T>(adapter: A, mut id_iter: T)
 where
     I: Clone + FromStr + Debug + Display + Hash + Eq,
     I::Err: Debug,
     A: TestAdapter<I>,
+    T: Iterator<Item = I>,
 {
-    let migration1 = A::mock(
-        I::from_str("bc960dc8-0e4a-4182-a62a-8e776d1e2b30").unwrap(),
-        HashSet::new(),
-    );
+    let migration1 = A::mock(id_iter.next().unwrap(), HashSet::new());
     let migration2 = A::mock(
-        I::from_str("4885e8ab-dafa-4d76-a565-2dee8b04ef60").unwrap(),
+        id_iter.next().unwrap(),
         vec![migration1.id()].into_iter().collect(),
     );
     let migration3 = A::mock(
-        I::from_str("c5d07448-851f-45e8-8fa7-4823d5250609").unwrap(),
+        id_iter.next().unwrap(),
         vec![migration2.id()].into_iter().collect(),
     );
 
@@ -174,26 +170,21 @@ where
 }
 
 /// Test that application and reversion of two DAG components are independent.
-pub fn test_multi_component_dag<I, A>(adapter: A)
+pub fn test_multi_component_dag<I, A, T>(adapter: A, mut id_iter: T)
 where
     I: Clone + FromStr + Debug + Display + Hash + Eq,
     I::Err: Debug,
     A: TestAdapter<I>,
+    T: Iterator<Item = I>,
 {
-    let migration1 = A::mock(
-        I::from_str("bc960dc8-0e4a-4182-a62a-8e776d1e2b30").unwrap(),
-        HashSet::new(),
-    );
+    let migration1 = A::mock(id_iter.next().unwrap(), HashSet::new());
     let migration2 = A::mock(
-        I::from_str("4885e8ab-dafa-4d76-a565-2dee8b04ef60").unwrap(),
+        id_iter.next().unwrap(),
         vec![migration1.id()].into_iter().collect(),
     );
-    let migration3 = A::mock(
-        I::from_str("c5d07448-851f-45e8-8fa7-4823d5250609").unwrap(),
-        HashSet::new(),
-    );
+    let migration3 = A::mock(id_iter.next().unwrap(), HashSet::new());
     let migration4 = A::mock(
-        I::from_str("9433a432-386f-467e-a59f-a9fb7e249767").unwrap(),
+        id_iter.next().unwrap(),
         vec![migration3.id()].into_iter().collect(),
     );
 
@@ -266,30 +257,25 @@ where
 }
 
 /// Test application and reversion on a branching DAG.
-pub fn test_branching_dag<I, A>(adapter: A)
+pub fn test_branching_dag<I, A, T>(adapter: A, mut id_iter: T)
 where
     I: Clone + FromStr + Debug + Display + Hash + Eq,
     I::Err: Debug,
     A: TestAdapter<I>,
+    T: Iterator<Item = I>,
 {
-    let migration1 = A::mock(
-        I::from_str("bc960dc8-0e4a-4182-a62a-8e776d1e2b30").unwrap(),
-        HashSet::new(),
-    );
-    let migration2 = A::mock(
-        I::from_str("4885e8ab-dafa-4d76-a565-2dee8b04ef60").unwrap(),
-        HashSet::new(),
-    );
+    let migration1 = A::mock(id_iter.next().unwrap(), HashSet::new());
+    let migration2 = A::mock(id_iter.next().unwrap(), HashSet::new());
     let migration3 = A::mock(
-        I::from_str("c5d07448-851f-45e8-8fa7-4823d5250609").unwrap(),
+        id_iter.next().unwrap(),
         vec![migration1.id(), migration2.id()].into_iter().collect(),
     );
     let migration4 = A::mock(
-        I::from_str("9433a432-386f-467e-a59f-a9fb7e249767").unwrap(),
+        id_iter.next().unwrap(),
         vec![migration3.id()].into_iter().collect(),
     );
     let migration5 = A::mock(
-        I::from_str("0940acb1-0e2e-4b99-9d69-2302a9c74524").unwrap(),
+        id_iter.next().unwrap(),
         vec![migration3.id()].into_iter().collect(),
     );
 
@@ -336,22 +322,20 @@ where
 
 /// Test the partial application and reversion of a chain of three dependent
 /// migrations, inserted in reverse order.
-pub fn test_migration_chain_reversed<I, A>(adapter: A)
+pub fn test_migration_chain_reversed<I, A, T>(adapter: A, mut id_iter: T)
 where
     I: Clone + FromStr + Debug + Display + Hash + Eq,
     I::Err: Debug,
     A: TestAdapter<I>,
+    T: Iterator<Item = I>,
 {
-    let migration1 = A::mock(
-        I::from_str("bc960dc8-0e4a-4182-a62a-8e776d1e2b30").unwrap(),
-        HashSet::new(),
-    );
+    let migration1 = A::mock(id_iter.next().unwrap(), HashSet::new());
     let migration2 = A::mock(
-        I::from_str("4885e8ab-dafa-4d76-a565-2dee8b04ef60").unwrap(),
+        id_iter.next().unwrap(),
         vec![migration1.id()].into_iter().collect(),
     );
     let migration3 = A::mock(
-        I::from_str("c5d07448-851f-45e8-8fa7-4823d5250609").unwrap(),
+        id_iter.next().unwrap(),
         vec![migration2.id()].into_iter().collect(),
     );
 
