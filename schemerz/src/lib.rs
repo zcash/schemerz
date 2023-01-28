@@ -434,6 +434,8 @@ where
 
 #[cfg(test)]
 pub mod tests {
+    use std::cell::RefCell;
+
     use super::testing::*;
     use super::*;
 
@@ -480,4 +482,208 @@ pub mod tests {
     }
 
     test_schemerz_adapter!(DefaultTestAdapter::new(), 0..);
+
+    pub struct TestMigrationWithCheck {
+        id: usize,
+        dependencies: HashSet<usize>,
+        check_fn_up: Box<dyn Fn()>,
+        check_fn_down: Box<dyn Fn()>,
+    }
+
+    impl TestMigrationWithCheck {
+        pub fn new<Fup: Fn() + 'static, Fdown: Fn() + 'static>(
+            id: usize,
+            dependencies: HashSet<usize>,
+            check_fn_up: Fup,
+            check_fn_down: Fdown,
+        ) -> Self {
+            TestMigrationWithCheck {
+                id,
+                dependencies,
+                check_fn_up: Box::new(check_fn_up),
+                check_fn_down: Box::new(check_fn_down),
+            }
+        }
+    }
+
+    impl Migration<usize> for TestMigrationWithCheck {
+        fn id(&self) -> usize {
+            self.id.clone()
+        }
+
+        fn dependencies(&self) -> HashSet<usize> {
+            self.dependencies.clone()
+        }
+
+        fn description(&self) -> &'static str {
+            "Test Migration"
+        }
+    }
+
+    #[derive(Default)]
+    struct TestAdapterWithCheck {
+        applied_migrations: HashSet<usize>,
+    }
+
+    impl Adapter<usize> for TestAdapterWithCheck {
+        type MigrationType = TestMigrationWithCheck;
+
+        type Error = DefaultTestAdapterError;
+
+        fn applied_migrations(&mut self) -> Result<HashSet<usize>, Self::Error> {
+            Ok(self.applied_migrations.clone())
+        }
+
+        fn apply_migration(&mut self, migration: &Self::MigrationType) -> Result<(), Self::Error> {
+            self.applied_migrations.insert(migration.id());
+            (migration.check_fn_up)();
+            Ok(())
+        }
+
+        fn revert_migration(&mut self, migration: &Self::MigrationType) -> Result<(), Self::Error> {
+            self.applied_migrations.remove(&migration.id());
+            (migration.check_fn_down)();
+            Ok(())
+        }
+    }
+
+    #[test]
+    fn test_migrations_run_order() {
+        let ran_migrations = Rc::new(RefCell::new(HashSet::new()));
+
+        let mut migrator = Migrator::new(TestAdapterWithCheck::default());
+
+        let rm = ran_migrations.clone();
+        let rm2 = ran_migrations.clone();
+        migrator
+            .register(TestMigrationWithCheck::new(
+                1,
+                [].into_iter().collect(),
+                move || {
+                    rm.borrow_mut().insert(1);
+                },
+                move || {
+                    rm2.borrow_mut().remove(&1);
+                },
+            ))
+            .unwrap();
+
+        // Making a binary tree with checks to make sure run order is correct
+        // Each node checks if their parents are up before them
+        // and their children are down before them
+        //             1
+        //      2              3
+        //  4      5       6       7
+        // 8 9   10 11   12 13   14 15
+        for i in 1__usize..4 {
+            for j in 0..2__usize.pow(i as u32) {
+                let id = 2_usize.pow(i as u32) + j;
+                let dep = id / 2;
+                let rm1 = ran_migrations.clone();
+                let rm2 = ran_migrations.clone();
+                migrator
+                    .register(TestMigrationWithCheck::new(
+                        id,
+                        [dep].into_iter().collect(),
+                        move || {
+                            let mut borrow = rm1.borrow_mut();
+                            if !borrow.contains(&dep) {
+                                panic!("Up called before dependency id:{}, dep:{}", id, dep)
+                            } else {
+                                borrow.insert(id);
+                            }
+                        },
+                        move || {
+                            let mut borrow = rm2.borrow_mut();
+                            if borrow.contains(&(id * 2)) {
+                                panic!("Down called before dependant id:{}, dep:{}", id, id * 2)
+                            } else if borrow.contains(&(id * 2 + 1)) {
+                                panic!("Down called before dependant id:{}, dep:{}", id, id * 2 + 1)
+                            } else {
+                                borrow.remove(&id);
+                            }
+                        },
+                    ))
+                    .unwrap();
+            }
+        }
+
+        migrator.up(None).unwrap();
+        let migrations = ran_migrations.borrow();
+        assert_eq!(migrations.clone(), (1..16).collect::<HashSet<_>>());
+        drop(migrations);
+
+        migrator.down(None).unwrap();
+        let migrations = ran_migrations.borrow();
+        assert_eq!(migrations.clone(), [].iter().cloned().collect());
+        drop(migrations);
+
+        migrator.up(None).unwrap();
+
+        // Should result in
+        //            1
+        //     2              3
+        //                6       7
+        //              12 13   14 15
+        migrator.down(Some(2)).unwrap();
+        let migrations = ran_migrations.borrow();
+        assert_eq!(
+            migrations.clone(),
+            [1, 2, 3, 6, 7, 12, 13, 14, 15].iter().cloned().collect()
+        );
+        drop(migrations);
+
+        // Should result in
+        //            1
+        //     2              3
+        //
+        //
+        migrator.down(Some(3)).unwrap();
+        let migrations = ran_migrations.borrow();
+        assert_eq!(migrations.clone(), [1, 2, 3].iter().cloned().collect());
+        drop(migrations);
+
+        migrator.down(None).unwrap();
+
+        // Should result in
+        //            1
+        //                    3
+        //
+        //
+        migrator.up(Some(3)).unwrap();
+        let migrations = ran_migrations.borrow();
+        assert_eq!(migrations.clone(), [1, 3].iter().cloned().collect());
+        drop(migrations);
+
+        // Should result in
+        //            1
+        //     2              3
+        //  4
+        //   9
+        migrator.up(Some(9)).unwrap();
+        let migrations = ran_migrations.borrow();
+        assert_eq!(
+            migrations.clone(),
+            [1, 2, 3, 4, 9].iter().cloned().collect()
+        );
+        drop(migrations);
+
+        // Should result in
+        //            1
+        //     2              3
+        //  4              6
+        //   9           12
+        migrator.up(Some(12)).unwrap();
+        let migrations = ran_migrations.borrow();
+        assert_eq!(
+            migrations.clone(),
+            [1, 2, 3, 4, 6, 9, 12].iter().cloned().collect()
+        );
+        drop(migrations);
+
+        migrator.up(None).unwrap();
+        let migrations = ran_migrations.borrow();
+        assert_eq!(migrations.clone(), (1..16).collect::<HashSet<_>>());
+        drop(migrations);
+    }
 }
