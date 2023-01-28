@@ -307,32 +307,23 @@ where
         &self,
         id: Option<I>,
         dir: EdgeDirection,
-    ) -> Result<HashSet<I>, DependencyError<I>> {
+    ) -> Result<HashSet<daggy::NodeIndex>, DependencyError<I>> {
         let mut target_ids = HashSet::new();
         match id {
             Some(id) => {
-                if !self.id_map.contains_key(&id) {
+                if let Some(id) = self.id_map.get(&id) {
+                    target_ids.insert(*id);
+                } else {
                     return Err(DependencyError::UnknownId(id));
                 }
-                target_ids.insert(id);
             }
             // This will eventually yield all migrations, so could be optimized.
-            None => target_ids.extend(
-                self.dependencies
-                    .graph()
-                    .externals(dir.opposite())
-                    .map(|idx| self.dependencies[idx].id()),
-            ),
+            None => target_ids.extend(self.dependencies.graph().externals(dir.opposite())),
         }
 
-        let mut to_visit: VecDeque<_> = target_ids
-            .iter()
-            .map(|id| *self.id_map.get(id).expect("ID map is malformed"))
-            .collect();
-        while !to_visit.is_empty() {
-            let idx = to_visit.pop_front().expect("Impossible: not empty");
-            let id = self.dependencies[idx].id();
-            target_ids.insert(id);
+        let mut to_visit: VecDeque<_> = target_ids.iter().cloned().collect();
+        while let Some(idx) = to_visit.pop_front() {
+            target_ids.insert(idx);
             to_visit.extend(self.dependencies.graph().neighbors_directed(idx, dir));
         }
 
@@ -353,19 +344,17 @@ where
         // Register the edges
         self.register_edges()?;
 
-        let target_ids = self
+        let target_idxs = self
             .induced_stream(to, EdgeDirection::Incoming)
             .map_err(MigratorError::Dependency)?;
 
         // TODO: This is assuming the applied_migrations state is consistent
         // with the dependency graph.
         let applied_migrations = self.adapter.applied_migrations()?;
-        for idx in &daggy::petgraph::algo::toposort(self.dependencies.graph(), None)
-            .expect("Impossible: dependencies are a DAG")
-        {
-            let migration = &self.dependencies[*idx];
+        for idx in target_idxs.into_iter() {
+            let migration = &self.dependencies[idx];
             let id = migration.id();
-            if applied_migrations.contains(&id) || !target_ids.contains(&id) {
+            if applied_migrations.contains(&id) {
                 continue;
             }
 
@@ -398,22 +387,26 @@ where
         // Register the edges
         self.register_edges()?;
 
-        let mut target_ids = self
+        let mut target_idxs = self
             .induced_stream(to.clone(), EdgeDirection::Outgoing)
             .map_err(MigratorError::Dependency)?;
         if let Some(sink_id) = to {
-            target_ids.remove(&sink_id);
+            target_idxs = target_idxs
+                .into_iter()
+                .filter(|idx| {
+                    self.id_map
+                        .get(&sink_id)
+                        .expect("Id is checked in induced_stream and exists")
+                        != idx
+                })
+                .collect();
         }
 
         let applied_migrations = self.adapter.applied_migrations()?;
-        for idx in daggy::petgraph::algo::toposort(self.dependencies.graph(), None)
-            .expect("Impossible: dependencies are a DAG")
-            .iter()
-            .rev()
-        {
-            let migration = &self.dependencies[*idx];
+        for idx in target_idxs.into_iter() {
+            let migration = &self.dependencies[idx];
             let id = migration.id();
-            if !applied_migrations.contains(&id) || !target_ids.contains(&id) {
+            if !applied_migrations.contains(&id) {
                 continue;
             }
 
