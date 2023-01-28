@@ -16,13 +16,16 @@ use std::rc::Rc;
 use std::sync::Arc;
 
 use daggy::petgraph::EdgeDirection;
-use daggy::Dag;
+use daggy::{Dag, Walker};
 use indexmap::IndexSet;
 use log::{debug, info};
 use thiserror::Error;
 
+use crate::traversal::DfsPostOrderDirectional;
+
 #[macro_use]
 pub mod testing;
+mod traversal;
 
 /// Metadata for defining the identity and dependence relations of migrations.
 /// Specific adapters require additional traits for actual application and
@@ -318,20 +321,20 @@ where
                     return Err(DependencyError::UnknownId(id));
                 }
             }
-            // This will eventually yield all migrations, so could be optimized.
             None => to_visit.extend(self.dependencies.graph().externals(dir.opposite())),
         }
 
-        let mut target_ids = IndexSet::new();
+        let mut target_set = IndexSet::new();
 
-        while let Some(idx) = to_visit.pop() {
-            if !target_ids.contains(&idx) {
-                target_ids.insert(idx);
-                to_visit.extend(self.dependencies.graph().neighbors_directed(idx, dir));
+        for idx in to_visit {
+            if !target_set.contains(&idx) {
+                let walker = DfsPostOrderDirectional::new(dir, &self.dependencies, idx);
+                let nodes: Vec<daggy::NodeIndex> = walker.iter(&self.dependencies).collect();
+                target_set.extend(nodes.iter());
             }
         }
 
-        Ok(target_ids)
+        Ok(target_set)
     }
 
     /// Apply migrations as necessary to so that the specified migration is
@@ -355,7 +358,7 @@ where
         // TODO: This is assuming the applied_migrations state is consistent
         // with the dependency graph.
         let applied_migrations = self.adapter.applied_migrations()?;
-        for idx in target_idxs.into_iter() {
+        for idx in target_idxs {
             let migration = &self.dependencies[idx];
             let id = migration.id();
             if applied_migrations.contains(&id) {
@@ -407,7 +410,7 @@ where
         }
 
         let applied_migrations = self.adapter.applied_migrations()?;
-        for idx in target_idxs.into_iter() {
+        for idx in target_idxs {
             let migration = &self.dependencies[idx];
             let id = migration.id();
             if !applied_migrations.contains(&id) {
