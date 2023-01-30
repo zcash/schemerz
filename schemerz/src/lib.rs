@@ -398,15 +398,11 @@ where
             .induced_stream(to.clone(), EdgeDirection::Outgoing)
             .map_err(MigratorError::Dependency)?;
         if let Some(sink_id) = to {
-            target_idxs = target_idxs
-                .into_iter()
-                .filter(|idx| {
-                    self.id_map
-                        .get(&sink_id)
-                        .expect("Id is checked in induced_stream and exists")
-                        != idx
-                })
-                .collect();
+            target_idxs.remove(
+                self.id_map
+                    .get(&sink_id)
+                    .expect("Id is checked in induced_stream and exists"),
+            );
         }
 
         let applied_migrations = self.adapter.applied_migrations()?;
