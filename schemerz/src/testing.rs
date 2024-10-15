@@ -54,15 +54,15 @@ impl Migration for TestMigration {
 ///     MyAdapterType {}
 /// }
 ///
-/// test_schemer_adapter!(construct_my_adapter_test_fixture());
+/// test_schemerz_adapter!(construct_my_adapter_test_fixture());
 /// ```
 #[macro_export]
-macro_rules! test_schemer_adapter {
+macro_rules! test_schemerz_adapter {
     ($constructor:expr) => {
-        test_schemer_adapter!({}, $constructor);
+        test_schemerz_adapter!({}, $constructor);
     };
     ($setup:stmt, $constructor:expr) => {
-        test_schemer_adapter!($setup, $constructor,
+        test_schemerz_adapter!($setup, $constructor,
             test_single_migration,
             test_migration_chain,
             test_multi_component_dag,

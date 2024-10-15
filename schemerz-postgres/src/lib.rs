@@ -173,7 +173,7 @@ impl<'a> Adapter for PostgresAdapter<'a> {
 mod tests {
     use super::*;
     use postgres::NoTls;
-    use schemerz::test_schemer_adapter;
+    use schemerz::test_schemerz_adapter;
     use schemerz::testing::*;
 
     impl PostgresMigration for TestMigration {}
@@ -196,7 +196,7 @@ mod tests {
         adapter
     }
 
-    test_schemer_adapter!(
+    test_schemerz_adapter!(
         let mut conn = build_test_connection(),
         build_test_adapter(&mut conn));
 }
