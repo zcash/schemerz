@@ -6,15 +6,15 @@
 //! ```rust
 //! extern crate rusqlite;
 //! #[macro_use]
-//! extern crate schemer;
-//! extern crate schemer_rusqlite;
+//! extern crate schemerz;
+//! extern crate schemerz_rusqlite;
 //! extern crate uuid;
 //!
 //! use std::collections::HashSet;
 //!
 //! use rusqlite::{params, Connection, Transaction, Error as RusqliteError};
-//! use schemer::{Migration, Migrator};
-//! use schemer_rusqlite::{RusqliteAdapter, RusqliteAdapterError, RusqliteMigration};
+//! use schemerz::{Migration, Migrator};
+//! use schemerz_rusqlite::{RusqliteAdapter, RusqliteAdapterError, RusqliteMigration};
 //! use uuid::Uuid;
 //!
 //! struct MyExampleMigration;
@@ -59,7 +59,7 @@ use std::marker::{PhantomData, Send, Sync};
 use rusqlite::{params, Connection, Error as RusqliteError, Transaction};
 use uuid::Uuid;
 
-use schemer::{Adapter, Migration};
+use schemerz::{Adapter, Migration};
 
 /// SQlite-specific trait for schema migrations.
 pub trait RusqliteMigration: Migration {
@@ -108,7 +108,7 @@ impl<'a, E> RusqliteAdapter<'a, E> {
     /// #
     /// # fn main() {
     /// let mut conn = rusqlite::Connection::open_in_memory().unwrap();
-    /// let adapter: schemer_rusqlite::RusqliteAdapter<RusqliteError> = schemer_rusqlite::RusqliteAdapter::new(&mut conn, None);
+    /// let adapter: schemerz_rusqlite::RusqliteAdapter<RusqliteError> = schemerz_rusqlite::RusqliteAdapter::new(&mut conn, None);
     /// # }
     /// ```
     pub fn new(conn: &'a mut Connection, table_name: Option<String>) -> RusqliteAdapter<'a, E> {
@@ -194,8 +194,8 @@ impl<'a, E: From<RusqliteError> + Sync + Send + Error + 'static> Adapter
 mod tests {
     use super::*;
     use rusqlite::Error as RusqliteError;
-    use schemer::test_schemer_adapter;
-    use schemer::testing::*;
+    use schemerz::test_schemer_adapter;
+    use schemerz::testing::*;
 
     impl RusqliteMigration for TestMigration {
         type Error = RusqliteError;

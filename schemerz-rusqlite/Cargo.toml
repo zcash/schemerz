@@ -1,6 +1,6 @@
 [package]
-name = "schemer-rusqlite"
-version = "0.2.2"
+name = "schemerz-rusqlite"
+version = "0.0.0"
 edition = "2021"
 rust-version = "1.59"
 authors = ["Andrew Champion <andrew.champion@gmail.com>"]
@@ -15,4 +15,4 @@ repository = "https://github.com/aschampion/schemer"
 uuid = { version = "1" }
 rusqlite = "0.29.0"
 
-schemer = { version = "0.2.1", path = "../schemer" }
+schemerz = { version = "0.0", path = "../schemerz" }

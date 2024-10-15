@@ -6,15 +6,15 @@
 //! ```rust
 //! extern crate postgres;
 //! #[macro_use]
-//! extern crate schemer;
-//! extern crate schemer_postgres;
+//! extern crate schemerz;
+//! extern crate schemerz_postgres;
 //! extern crate uuid;
 //!
 //! use std::collections::HashSet;
 //!
 //! use postgres::{Client, NoTls, Transaction};
-//! use schemer::{Migration, Migrator};
-//! use schemer_postgres::{PostgresAdapter, PostgresAdapterError, PostgresMigration};
+//! use schemerz::{Migration, Migrator};
+//! use schemerz_postgres::{PostgresAdapter, PostgresAdapterError, PostgresMigration};
 //! use uuid::Uuid;
 //!
 //! struct MyExampleMigration;
@@ -58,7 +58,7 @@ use std::collections::HashSet;
 use postgres::{Client, Error as PostgresError, Transaction};
 use uuid::Uuid;
 
-use schemer::{Adapter, Migration};
+use schemerz::{Adapter, Migration};
 
 /// PostgreSQL-specific trait for schema migrations.
 pub trait PostgresMigration: Migration {
@@ -90,13 +90,13 @@ impl<'a> PostgresAdapter<'a> {
     ///
     /// ```rust
     /// # extern crate postgres;
-    /// # extern crate schemer_postgres;
+    /// # extern crate schemerz_postgres;
     /// #
     /// # fn main() {
     /// let mut conn = postgres::Client::connect(
     ///     "postgresql://postgres@localhost",
     ///     postgres::NoTls).unwrap();
-    /// let adapter = schemer_postgres::PostgresAdapter::new(&mut conn, None);
+    /// let adapter = schemerz_postgres::PostgresAdapter::new(&mut conn, None);
     /// # }
     /// ```
     pub fn new(conn: &'a mut Client, table_name: Option<String>) -> PostgresAdapter<'a> {
@@ -173,8 +173,8 @@ impl<'a> Adapter for PostgresAdapter<'a> {
 mod tests {
     use super::*;
     use postgres::NoTls;
-    use schemer::test_schemer_adapter;
-    use schemer::testing::*;
+    use schemerz::test_schemer_adapter;
+    use schemerz::testing::*;
 
     impl PostgresMigration for TestMigration {}
 

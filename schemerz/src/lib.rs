@@ -4,8 +4,8 @@
 //! To use with a specific database, an adapter is required. Known adapter
 //! crates:
 //!
-//! - PostgreSQL: [`schemer-postgres`](https://crates.io/crates/schemer-postgres)
-//! - SQLite: [`schemer-rusqlite`](https://crates.io/crates/schemer-rusqlite)
+//! - PostgreSQL: [`schemerz-postgres`](https://crates.io/crates/schemerz-postgres)
+//! - SQLite: [`schemerz-rusqlite`](https://crates.io/crates/schemerz-rusqlite)
 #![warn(clippy::all)]
 #![forbid(unsafe_code)]
 
@@ -41,10 +41,10 @@ pub trait Migration {
 ///
 /// ```rust
 /// #[macro_use]
-/// extern crate schemer;
+/// extern crate schemerz;
 /// extern crate uuid;
 ///
-/// use schemer::Migration;
+/// use schemerz::Migration;
 ///
 /// struct ParentMigration;
 /// migration!(
