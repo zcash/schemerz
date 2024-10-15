@@ -1,4 +1,4 @@
-//! An adapter enabling use of the schemer schema migration library with
+//! An adapter enabling use of the schemerz schema migration library with
 //! PostgreSQL.
 //!
 //! # Examples:
@@ -6,15 +6,15 @@
 //! ```rust
 //! extern crate postgres;
 //! #[macro_use]
-//! extern crate schemer;
-//! extern crate schemer_postgres;
+//! extern crate schemerz;
+//! extern crate schemerz_postgres;
 //! extern crate uuid;
 //!
 //! use std::collections::HashSet;
 //!
 //! use postgres::{Client, NoTls, Transaction};
-//! use schemer::{Migration, Migrator};
-//! use schemer_postgres::{PostgresAdapter, PostgresAdapterError, PostgresMigration};
+//! use schemerz::{Migration, Migrator};
+//! use schemerz_postgres::{PostgresAdapter, PostgresAdapterError, PostgresMigration};
 //! use uuid::Uuid;
 //!
 //! struct MyExampleMigration;
@@ -58,7 +58,7 @@ use std::collections::HashSet;
 use postgres::{Client, Error as PostgresError, Transaction};
 use uuid::Uuid;
 
-use schemer::{Adapter, Migration};
+use schemerz::{Adapter, Migration};
 
 /// PostgreSQL-specific trait for schema migrations.
 pub trait PostgresMigration: Migration {
@@ -75,28 +75,28 @@ pub trait PostgresMigration: Migration {
 
 pub type PostgresAdapterError = PostgresError;
 
-/// Adapter between schemer and PostgreSQL.
+/// Adapter between schemerz and PostgreSQL.
 pub struct PostgresAdapter<'a> {
     conn: &'a mut Client,
     migration_metadata_table: String,
 }
 
 impl<'a> PostgresAdapter<'a> {
-    /// Construct a PostgreSQL schemer adapter.
+    /// Construct a PostgreSQL schemerz adapter.
     ///
-    /// `table_name` specifies the name of the table that schemer will use
+    /// `table_name` specifies the name of the table that schemerz will use
     /// for storing metadata about applied migrations. If `None`, a default
     /// will be used.
     ///
     /// ```rust
     /// # extern crate postgres;
-    /// # extern crate schemer_postgres;
+    /// # extern crate schemerz_postgres;
     /// #
     /// # fn main() {
     /// let mut conn = postgres::Client::connect(
     ///     "postgresql://postgres@localhost",
     ///     postgres::NoTls).unwrap();
-    /// let adapter = schemer_postgres::PostgresAdapter::new(&mut conn, None);
+    /// let adapter = schemerz_postgres::PostgresAdapter::new(&mut conn, None);
     /// # }
     /// ```
     pub fn new(conn: &'a mut Client, table_name: Option<String>) -> PostgresAdapter<'a> {
@@ -106,7 +106,7 @@ impl<'a> PostgresAdapter<'a> {
         }
     }
 
-    /// Initialize the schemer metadata schema. This must be called before
+    /// Initialize the schemerz metadata schema. This must be called before
     /// using `Migrator` with this adapter. This is safe to call multiple times.
     pub fn init(&mut self) -> Result<(), PostgresError> {
         self.conn.execute(
@@ -173,8 +173,8 @@ impl<'a> Adapter for PostgresAdapter<'a> {
 mod tests {
     use super::*;
     use postgres::NoTls;
-    use schemer::test_schemer_adapter;
-    use schemer::testing::*;
+    use schemerz::test_schemer_adapter;
+    use schemerz::testing::*;
 
     impl PostgresMigration for TestMigration {}
 

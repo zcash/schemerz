@@ -1,5 +1,5 @@
 //! Test harness for applying a generic test suite to any backend-specific
-//! schemer adapter.
+//! schemerz adapter.
 
 use super::*;
 
@@ -48,7 +48,7 @@ impl Migration for TestMigration {
 /// # Examples
 ///
 /// ```rust,ignore
-/// #[macro_use] extern crate schemer;
+/// #[macro_use] extern crate schemerz;
 ///
 /// fn construct_my_adapter_test_fixture() -> MyAdapterType {
 ///     MyAdapterType {}

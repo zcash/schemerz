@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
-    "schemer",
-    "schemer-postgres",
-    "schemer-rusqlite",
+    "schemerz",
+    "schemerz-postgres",
+    "schemerz-rusqlite",
 ]

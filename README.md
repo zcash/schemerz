@@ -1,13 +1,13 @@
-# Schemer [![Build Status](https://github.com/aschampion/schemer/actions/workflows/ci.yml/badge.svg)](https://github.com/aschampion/schemer/actions/workflows/ci.yml/)
+# Schemerz [![Build Status](https://github.com/zcash/schemerz/actions/workflows/ci.yml/badge.svg)](https://github.com/zcash/schemerz/actions/workflows/ci.yml/)
 
-Schemer is a database schema migration library for Rust that supports directed acyclic graph (DAG) dependencies between migrations. It currently has adapters for the following databases:
+Schemerz is a database schema migration library for Rust that supports directed acyclic graph (DAG) dependencies between migrations. It currently has adapters for the following databases:
 
-- PostgreSQL: [schemer-postgres](https://crates.io/crates/schemer-postgres)
-- SQLite: [schemer-rusqlite](https://crates.io/crates/schemer-rusqlite)
+- PostgreSQL: [schemerz-postgres](https://crates.io/crates/schemerz-postgres)
+- SQLite: [schemerz-rusqlite](https://crates.io/crates/schemerz-rusqlite)
 
 Other Rust schema migration libraries to consider if you do not require DAG migration dependencies:
 
-- [schemamama](https://crates.io/crates/schemamama) (recommended -- this is the basis for Schemer's API)
+- [schemamama](https://crates.io/crates/schemamama) (recommended -- this is the basis for Schemerz's API)
 - [dbmigrate](https://crates.io/crates/dbmigrate)
 - [migrant](https://crates.io/crates/migrant)
 
@@ -18,6 +18,12 @@ Version bumping (including changelog release section versioning) is handled by [
 ```prompt
 cargo release --workspace minor
 ```
+
+## Acknowledgements
+
+Schemerz started as a fork of the [`schemer`](https://crates.io/crates/schemer) crate by
+Andrew Champion. The name "Schemerz" is a nod to its origin, as well as a play on the
+German word "Schmerz" meaning "pain" (which aptly describes database migrations).
 
 ## License
 

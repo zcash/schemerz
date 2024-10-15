@@ -1,4 +1,4 @@
-//! An adapter enabling use of the schemer schema migration library with
+//! An adapter enabling use of the schemerz schema migration library with
 //! SQLite3.
 //!
 //! # Examples:
@@ -6,15 +6,15 @@
 //! ```rust
 //! extern crate rusqlite;
 //! #[macro_use]
-//! extern crate schemer;
-//! extern crate schemer_rusqlite;
+//! extern crate schemerz;
+//! extern crate schemerz_rusqlite;
 //! extern crate uuid;
 //!
 //! use std::collections::HashSet;
 //!
 //! use rusqlite::{params, Connection, Transaction, Error as RusqliteError};
-//! use schemer::{Migration, Migrator};
-//! use schemer_rusqlite::{RusqliteAdapter, RusqliteAdapterError, RusqliteMigration};
+//! use schemerz::{Migration, Migrator};
+//! use schemerz_rusqlite::{RusqliteAdapter, RusqliteAdapterError, RusqliteMigration};
 //! use uuid::Uuid;
 //!
 //! struct MyExampleMigration;
@@ -59,7 +59,7 @@ use std::marker::{PhantomData, Send, Sync};
 use rusqlite::{params, Connection, Error as RusqliteError, Transaction};
 use uuid::Uuid;
 
-use schemer::{Adapter, Migration};
+use schemerz::{Adapter, Migration};
 
 /// SQlite-specific trait for schema migrations.
 pub trait RusqliteMigration: Migration {
@@ -88,7 +88,7 @@ impl rusqlite::types::FromSql for WrappedUuid {
     }
 }
 
-/// Adapter between schemer and SQLite.
+/// Adapter between schemerz and SQLite.
 pub struct RusqliteAdapter<'a, E> {
     conn: &'a mut Connection,
     migration_metadata_table: String,
@@ -96,9 +96,9 @@ pub struct RusqliteAdapter<'a, E> {
 }
 
 impl<'a, E> RusqliteAdapter<'a, E> {
-    /// Construct a SQLite schemer adapter.
+    /// Construct a SQLite schemerz adapter.
     ///
-    /// `table_name` specifies the name of the table that schemer will use
+    /// `table_name` specifies the name of the table that schemerz will use
     /// for storing metadata about applied migrations. If `None`, a default
     /// will be used.
     ///
@@ -108,7 +108,7 @@ impl<'a, E> RusqliteAdapter<'a, E> {
     /// #
     /// # fn main() {
     /// let mut conn = rusqlite::Connection::open_in_memory().unwrap();
-    /// let adapter: schemer_rusqlite::RusqliteAdapter<RusqliteError> = schemer_rusqlite::RusqliteAdapter::new(&mut conn, None);
+    /// let adapter: schemerz_rusqlite::RusqliteAdapter<RusqliteError> = schemerz_rusqlite::RusqliteAdapter::new(&mut conn, None);
     /// # }
     /// ```
     pub fn new(conn: &'a mut Connection, table_name: Option<String>) -> RusqliteAdapter<'a, E> {
@@ -119,7 +119,7 @@ impl<'a, E> RusqliteAdapter<'a, E> {
         }
     }
 
-    /// Initialize the schemer metadata schema. This must be called before
+    /// Initialize the schemerz metadata schema. This must be called before
     /// using `Migrator` with this adapter. This is safe to call multiple times.
     pub fn init(&self) -> Result<(), RusqliteError> {
         self.conn.execute(
@@ -194,8 +194,8 @@ impl<'a, E: From<RusqliteError> + Sync + Send + Error + 'static> Adapter
 mod tests {
     use super::*;
     use rusqlite::Error as RusqliteError;
-    use schemer::test_schemer_adapter;
-    use schemer::testing::*;
+    use schemerz::test_schemer_adapter;
+    use schemerz::testing::*;
 
     impl RusqliteMigration for TestMigration {
         type Error = RusqliteError;

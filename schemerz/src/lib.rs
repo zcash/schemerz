@@ -4,8 +4,8 @@
 //! To use with a specific database, an adapter is required. Known adapter
 //! crates:
 //!
-//! - PostgreSQL: [`schemer-postgres`](https://crates.io/crates/schemer-postgres)
-//! - SQLite: [`schemer-rusqlite`](https://crates.io/crates/schemer-rusqlite)
+//! - PostgreSQL: [`schemerz-postgres`](https://crates.io/crates/schemerz-postgres)
+//! - SQLite: [`schemerz-rusqlite`](https://crates.io/crates/schemerz-rusqlite)
 #![warn(clippy::all)]
 #![forbid(unsafe_code)]
 
@@ -41,10 +41,10 @@ pub trait Migration {
 ///
 /// ```rust
 /// #[macro_use]
-/// extern crate schemer;
+/// extern crate schemerz;
 /// extern crate uuid;
 ///
-/// use schemer::Migration;
+/// use schemerz::Migration;
 ///
 /// struct ParentMigration;
 /// migration!(
@@ -107,7 +107,7 @@ impl Display for MigrationDirection {
     }
 }
 
-/// Trait necessary to adapt schemer's migration management to a stateful
+/// Trait necessary to adapt schemerz's migration management to a stateful
 /// backend.
 pub trait Adapter {
     /// Type migrations must implement for this adapter.
@@ -157,7 +157,7 @@ pub enum MigratorError<T: std::error::Error + 'static> {
     },
 }
 
-/// Primary schemer type for defining and applying migrations.
+/// Primary schemerz type for defining and applying migrations.
 pub struct Migrator<T: Adapter> {
     adapter: T,
     dependencies: Dag<Box<T::MigrationType>, ()>,
