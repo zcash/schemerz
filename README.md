@@ -19,6 +19,12 @@ Version bumping (including changelog release section versioning) is handled by [
 cargo release --workspace minor
 ```
 
+## Acknowledgements
+
+Schemerz started as a fork of the [`schemer`](https://crates.io/crates/schemer) crate by
+Andrew Champion. The name "Schemerz" is a nod to its origin, as well as a play on the
+German word "Schmerz" meaning "pain" (which aptly describes database migrations).
+
 ## License
 
 Licensed under either of

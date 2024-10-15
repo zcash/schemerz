@@ -3,7 +3,10 @@ name = "schemerz-postgres"
 version = "0.0.0"
 edition = "2021"
 rust-version = "1.59"
-authors = ["Andrew Champion <andrew.champion@gmail.com>"]
+authors = [
+    "Jack Grigg <jack@electriccoin.co>",
+    "Kris Nuttycombe <kris@electriccoin.co>",
+]
 description = "PostgreSQL adapter for the Schemerz database schema migration library"
 readme = "../README.md"
 keywords = ["database", "migration", "postgresql", "sql"]
