@@ -1,5 +1,5 @@
 //! Test harness for applying a generic test suite to any backend-specific
-//! schemer adapter.
+//! schemerz adapter.
 
 use super::*;
 

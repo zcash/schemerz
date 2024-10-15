@@ -1,4 +1,4 @@
-//! An adapter enabling use of the schemer schema migration library with
+//! An adapter enabling use of the schemerz schema migration library with
 //! PostgreSQL.
 //!
 //! # Examples:
@@ -75,16 +75,16 @@ pub trait PostgresMigration: Migration {
 
 pub type PostgresAdapterError = PostgresError;
 
-/// Adapter between schemer and PostgreSQL.
+/// Adapter between schemerz and PostgreSQL.
 pub struct PostgresAdapter<'a> {
     conn: &'a mut Client,
     migration_metadata_table: String,
 }
 
 impl<'a> PostgresAdapter<'a> {
-    /// Construct a PostgreSQL schemer adapter.
+    /// Construct a PostgreSQL schemerz adapter.
     ///
-    /// `table_name` specifies the name of the table that schemer will use
+    /// `table_name` specifies the name of the table that schemerz will use
     /// for storing metadata about applied migrations. If `None`, a default
     /// will be used.
     ///
@@ -106,7 +106,7 @@ impl<'a> PostgresAdapter<'a> {
         }
     }
 
-    /// Initialize the schemer metadata schema. This must be called before
+    /// Initialize the schemerz metadata schema. This must be called before
     /// using `Migrator` with this adapter. This is safe to call multiple times.
     pub fn init(&mut self) -> Result<(), PostgresError> {
         self.conn.execute(

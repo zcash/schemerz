@@ -4,12 +4,12 @@ version = "0.0.0"
 edition = "2021"
 rust-version = "1.59"
 authors = ["Andrew Champion <andrew.champion@gmail.com>"]
-description = "SQLite3 adapter for the Schemer database schema migration library "
+description = "SQLite3 adapter for the Schemerz database schema migration library "
 readme = "../README.md"
 keywords = ["database", "migration", "sqlite", "sql"]
 categories = ["database"]
 license = "MIT/Apache-2.0"
-repository = "https://github.com/aschampion/schemer"
+repository = "https://github.com/zcash/schemerz"
 
 [dependencies]
 uuid = { version = "1" }

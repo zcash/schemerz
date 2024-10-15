@@ -107,7 +107,7 @@ impl Display for MigrationDirection {
     }
 }
 
-/// Trait necessary to adapt schemer's migration management to a stateful
+/// Trait necessary to adapt schemerz's migration management to a stateful
 /// backend.
 pub trait Adapter {
     /// Type migrations must implement for this adapter.
@@ -157,7 +157,7 @@ pub enum MigratorError<T: std::error::Error + 'static> {
     },
 }
 
-/// Primary schemer type for defining and applying migrations.
+/// Primary schemerz type for defining and applying migrations.
 pub struct Migrator<T: Adapter> {
     adapter: T,
     dependencies: Dag<Box<T::MigrationType>, ()>,
