@@ -6,12 +6,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly
-          components: rustfmt, clippy
-          override: true
       - uses: Swatinem/rust-cache@v1
       - run: cargo clippy --all-features -- -D warnings
       - run: cargo fmt -- --check
@@ -20,10 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
+      - uses: dtolnay/rust-toolchain@stable
+        id: toolchain
+      - run: rustup override set ${{steps.toolchain.outputs.name}}
       - name: Run cargo-semver-checks
         shell: bash
         run: |
@@ -32,6 +25,7 @@ jobs:
           cargo semver-checks check-release
 
   test:
+    name: Test ${{ matrix.rust }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     services:
       postgres:
@@ -49,15 +43,17 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         rust:
+          - MSRV
           - stable
-          - 1.59
     steps:
       - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{ matrix.rust }}
-          profile: minimal
-          override: true
+
+      - uses: dtolnay/rust-toolchain@stable
+        id: toolchain
+        if: matrix.rust == 'stable'
+      - run: rustup override set ${{steps.toolchain.outputs.name}}
+        if: matrix.rust == 'stable'
+
       - uses: Swatinem/rust-cache@v1
       - run: cargo build --tests
       - run: cargo test -- --nocapture --quiet
