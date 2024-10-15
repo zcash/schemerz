@@ -9,6 +9,12 @@ and this library adheres to Rust's notion of
 <!-- next-header -->
 ## [Unreleased]
 
+### Added
+- `schemerz::test_schemerz_adapter`
+
+### Removed
+- `schemerz::test_schemer_adapter` (use `test_schemerz_adapter` instead).
+
 ## [0.1.0] - 2024-10-15
 Initial release. The API is identical to `schemer 0.2.1`.
 

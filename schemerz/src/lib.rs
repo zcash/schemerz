@@ -403,5 +403,5 @@ pub mod tests {
         }
     }
 
-    test_schemer_adapter!(DefaultTestAdapter::new());
+    test_schemerz_adapter!(DefaultTestAdapter::new());
 }

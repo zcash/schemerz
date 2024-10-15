@@ -114,7 +114,7 @@ impl<'a, E> RusqliteAdapter<'a, E> {
     pub fn new(conn: &'a mut Connection, table_name: Option<String>) -> RusqliteAdapter<'a, E> {
         RusqliteAdapter {
             conn,
-            migration_metadata_table: table_name.unwrap_or_else(|| "_schemer".into()),
+            migration_metadata_table: table_name.unwrap_or_else(|| "_schemerz".into()),
             _err: PhantomData,
         }
     }
@@ -194,7 +194,7 @@ impl<'a, E: From<RusqliteError> + Sync + Send + Error + 'static> Adapter
 mod tests {
     use super::*;
     use rusqlite::Error as RusqliteError;
-    use schemerz::test_schemer_adapter;
+    use schemerz::test_schemerz_adapter;
     use schemerz::testing::*;
 
     impl RusqliteMigration for TestMigration {
@@ -217,7 +217,7 @@ mod tests {
         adapter
     }
 
-    test_schemer_adapter!(
+    test_schemerz_adapter!(
         let mut conn = build_test_connection(),
         build_test_adapter(&mut conn));
 }

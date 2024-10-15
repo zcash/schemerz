@@ -9,6 +9,12 @@ and this library adheres to Rust's notion of
 <!-- next-header -->
 ## [Unreleased]
 
+### Changed
+- **IMPORTANT BREAKING CHANGE**: `schemerz_postgres::PostgresAdapter::new` now
+  uses a default table name of `_schemerz` when the `table_name` argument is
+  `None`. If you were not setting this argument before and are migrating from
+  `schemer`, you will need to set `table_name` to `Some("_schemer".into())`.
+
 ## [0.190.0] - 2024-10-15
 Initial release. The API is identical to `schemer-postgres 0.2.0`.
 

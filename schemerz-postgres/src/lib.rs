@@ -102,7 +102,7 @@ impl<'a> PostgresAdapter<'a> {
     pub fn new(conn: &'a mut Client, table_name: Option<String>) -> PostgresAdapter<'a> {
         PostgresAdapter {
             conn,
-            migration_metadata_table: table_name.unwrap_or_else(|| "_schemer".into()),
+            migration_metadata_table: table_name.unwrap_or_else(|| "_schemerz".into()),
         }
     }
 
@@ -173,7 +173,7 @@ impl<'a> Adapter for PostgresAdapter<'a> {
 mod tests {
     use super::*;
     use postgres::NoTls;
-    use schemerz::test_schemer_adapter;
+    use schemerz::test_schemerz_adapter;
     use schemerz::testing::*;
 
     impl PostgresMigration for TestMigration {}
@@ -196,7 +196,7 @@ mod tests {
         adapter
     }
 
-    test_schemer_adapter!(
+    test_schemerz_adapter!(
         let mut conn = build_test_connection(),
         build_test_adapter(&mut conn));
 }
