@@ -286,9 +286,9 @@ where
                 .dependencies();
 
             for d in depends {
-                let parent_idx = self.id_map.get(&d).ok_or(MigratorError::Dependency(
-                    DependencyError::UnknownId(d.clone()),
-                ))?;
+                let parent_idx = self.id_map.get(&d).ok_or_else(|| {
+                    MigratorError::Dependency(DependencyError::UnknownId(d.clone()))
+                })?;
                 self.dependencies
                     .add_edge(*parent_idx, *migration_idx, ())
                     .map_err(|_| {
@@ -504,7 +504,7 @@ pub mod tests {
 
     impl Migration<usize> for TestMigrationWithCheck {
         fn id(&self) -> usize {
-            self.id.clone()
+            self.id
         }
 
         fn dependencies(&self) -> HashSet<usize> {
@@ -571,8 +571,8 @@ pub mod tests {
         //      2              3
         //  4      5       6       7
         // 8 9   10 11   12 13   14 15
-        for i in 1__usize..4 {
-            for j in 0..2__usize.pow(i as u32) {
+        for i in 1_usize..4 {
+            for j in 0..2_usize.pow(i as u32) {
                 let id = 2_usize.pow(i as u32) + j;
                 let dep = id / 2;
                 let rm1 = ran_migrations.clone();
