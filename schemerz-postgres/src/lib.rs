@@ -102,7 +102,7 @@ impl<'a> PostgresAdapter<'a> {
     pub fn new(conn: &'a mut Client, table_name: Option<String>) -> PostgresAdapter<'a> {
         PostgresAdapter {
             conn,
-            migration_metadata_table: table_name.unwrap_or_else(|| "_schemer".into()),
+            migration_metadata_table: table_name.unwrap_or_else(|| "_schemerz".into()),
         }
     }
 

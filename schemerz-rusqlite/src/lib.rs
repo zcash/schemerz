@@ -114,7 +114,7 @@ impl<'a, E> RusqliteAdapter<'a, E> {
     pub fn new(conn: &'a mut Connection, table_name: Option<String>) -> RusqliteAdapter<'a, E> {
         RusqliteAdapter {
             conn,
-            migration_metadata_table: table_name.unwrap_or_else(|| "_schemer".into()),
+            migration_metadata_table: table_name.unwrap_or_else(|| "_schemerz".into()),
             _err: PhantomData,
         }
     }
