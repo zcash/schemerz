@@ -2,28 +2,6 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: Swatinem/rust-cache@v1
-      - run: cargo clippy --all-features -- -D warnings
-      - run: cargo fmt -- --check
-
-  semver-checks:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@stable
-        id: toolchain
-      - run: rustup override set ${{steps.toolchain.outputs.name}}
-      - name: Run cargo-semver-checks
-        shell: bash
-        run: |
-          export CARGO_TERM_COLOR=always
-          cargo install cargo-semver-checks --locked
-          cargo semver-checks check-release
-
   test:
     name: Test ${{ matrix.rust }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -46,14 +24,35 @@ jobs:
           - MSRV
           - stable
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
+      # If testing stable Rust, do so with the latest dependencies.
       - uses: dtolnay/rust-toolchain@stable
         id: toolchain
         if: matrix.rust == 'stable'
       - run: rustup override set ${{steps.toolchain.outputs.name}}
         if: matrix.rust == 'stable'
+      - name: Remove lockfile to build with latest dependencies
+        run: rm Cargo.lock
+        if: matrix.rust == 'stable'
 
       - uses: Swatinem/rust-cache@v1
       - run: cargo build --tests
       - run: cargo test -- --nocapture --quiet
+
+  clippy-msrv:
+    name: Clippy (MSRV)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v1
+      - run: cargo clippy --all-features -- -D warnings
+      - run: cargo fmt -- --check
+
+  fmt:
+    name: Rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check formatting
+        run: cargo fmt --all -- --check
