@@ -9,6 +9,7 @@ and this library adheres to Rust's notion of
 <!-- next-header -->
 ## [Unreleased]
 
+## [0.291.0] - 2024-10-16
 ### Changed
 - Migrated to `schemerz 0.2.0`.
 - **IMPORTANT BREAKING CHANGE**: `schemerz_rusqlite::RusqliteAdapter::new` now
@@ -21,5 +22,6 @@ Initial release. The API is identical to `schemer-rusqlite 0.2.2`.
 
 
 <!-- next-url -->
-[Unreleased]: https://github.com/zcash/schemerz/compare/schemerz-rusqlite-0.1.0...HEAD
-[0.290.0]: https://github.com/zcash/schemerz/compare/1bfd952b035b87a39df955376e0bdddf98eb6c99...schemerz-rusqlite-0.1.0
+[Unreleased]: https://github.com/zcash/schemerz/compare/schemerz-rusqlite-0.291.0...HEAD
+[0.291.0]: https://github.com/zcash/schemerz/compare/schemerz-rusqlite-0.290.0...schemerz-rusqlite-0.291.0
+[0.290.0]: https://github.com/zcash/schemerz/compare/1bfd952b035b87a39df955376e0bdddf98eb6c99...schemerz-rusqlite-0.290.0
