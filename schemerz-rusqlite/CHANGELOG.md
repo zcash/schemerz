@@ -11,6 +11,7 @@ and this library adheres to Rust's notion of
 
 ### Changed
 - MSRV is now 1.77.
+- Migrated to `rusqlite 0.32`.
 
 ## [0.310.0] - 2024-10-16
 ### Changed

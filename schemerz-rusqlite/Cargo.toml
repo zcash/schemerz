@@ -16,6 +16,6 @@ repository = "https://github.com/zcash/schemerz"
 
 [dependencies]
 uuid = { version = "1" }
-rusqlite = "0.31"
+rusqlite = "0.32"
 
 schemerz = { version = "0.2", path = "../schemerz" }
