@@ -9,6 +9,9 @@ and this library adheres to Rust's notion of
 <!-- next-header -->
 ## [Unreleased]
 
+### Changed
+- MSRV is now 1.63.
+
 ## [0.191.0] - 2024-10-16
 ### Changed
 - Migrated to `schemerz 0.2.0`.

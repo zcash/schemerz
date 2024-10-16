@@ -2,7 +2,7 @@
 name = "schemerz"
 version = "0.2.0"
 edition = "2021"
-rust-version = "1.59"
+rust-version = "1.63"
 authors = [
     "Jack Grigg <jack@electriccoin.co>",
     "Kris Nuttycombe <kris@electriccoin.co>",
