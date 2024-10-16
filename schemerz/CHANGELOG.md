@@ -9,6 +9,8 @@ and this library adheres to Rust's notion of
 <!-- next-header -->
 ## [Unreleased]
 
+## [0.2.0] - 2024-10-16
+
 ### Fixed
 - `schemerz::Migrator::{register, register_multiple}` can now register dependent
   migrations before their dependencies. Previously this would result in a graph
@@ -69,5 +71,6 @@ Initial release. The API is identical to `schemer 0.2.1`.
 
 
 <!-- next-url -->
-[Unreleased]: https://github.com/zcash/schemerz/compare/schemerz-0.1.0...HEAD
+[Unreleased]: https://github.com/zcash/schemerz/compare/schemerz-0.2.0...HEAD
+[0.2.0]: https://github.com/zcash/schemerz/compare/schemerz-0.1.0...schemerz-0.2.0
 [0.1.0]: https://github.com/zcash/schemerz/compare/1bfd952b035b87a39df955376e0bdddf98eb6c99...schemerz-0.1.0

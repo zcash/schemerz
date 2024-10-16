@@ -18,4 +18,4 @@ repository = "https://github.com/zcash/schemerz"
 uuid = { version = "1" }
 rusqlite = "0.29.0"
 
-schemerz = { version = "0.1", path = "../schemerz" }
+schemerz = { version = "0.2", path = "../schemerz" }

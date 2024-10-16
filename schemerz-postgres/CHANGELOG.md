@@ -10,6 +10,7 @@ and this library adheres to Rust's notion of
 ## [Unreleased]
 
 ### Changed
+- Migrated to `schemerz 0.2.0`.
 - **IMPORTANT BREAKING CHANGE**: `schemerz_postgres::PostgresAdapter::new` now
   uses a default table name of `_schemerz` when the `table_name` argument is
   `None`. If you were not setting this argument before and are migrating from
