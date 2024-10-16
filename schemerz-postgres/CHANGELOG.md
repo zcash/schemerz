@@ -10,6 +10,11 @@ and this library adheres to Rust's notion of
 ## [Unreleased]
 
 ### Changed
+- MSRV is now 1.77.
+
+## [0.191.0] - 2024-10-16
+### Changed
+- Migrated to `schemerz 0.2.0`.
 - **IMPORTANT BREAKING CHANGE**: `schemerz_postgres::PostgresAdapter::new` now
   uses a default table name of `_schemerz` when the `table_name` argument is
   `None`. If you were not setting this argument before and are migrating from
@@ -20,5 +25,6 @@ Initial release. The API is identical to `schemer-postgres 0.2.0`.
 
 
 <!-- next-url -->
-[Unreleased]: https://github.com/zcash/schemerz/compare/schemerz-postgres-0.1.0...HEAD
-[0.190.0]: https://github.com/zcash/schemerz/compare/1bfd952b035b87a39df955376e0bdddf98eb6c99...schemerz-postgres-0.1.0
+[Unreleased]: https://github.com/zcash/schemerz/compare/schemerz-postgres-0.191.0...HEAD
+[0.191.0]: https://github.com/zcash/schemerz/compare/schemerz-postgres-0.190.0...schemerz-postgres-0.191.0
+[0.190.0]: https://github.com/zcash/schemerz/compare/1bfd952b035b87a39df955376e0bdddf98eb6c99...schemerz-postgres-0.190.0
