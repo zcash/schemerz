@@ -1,36 +1,38 @@
 //! Test harness for applying a generic test suite to any backend-specific
 //! schemerz adapter.
 
+use std::str::FromStr;
+
 use super::*;
 
 /// A trait required for running the generic test suite on an `Adapter`.
-pub trait TestAdapter: Adapter {
+pub trait TestAdapter<I>: Adapter<I> {
     /// Construct a mock, no-op migration of the adapter's `MigrationType`.
     ///
     /// For convenience adapters can implement their migration traits on
     /// `TestMigration` and construct those here.
-    fn mock(id: Uuid, dependencies: HashSet<Uuid>) -> Box<Self::MigrationType>;
+    fn mock(id: I, dependencies: HashSet<I>) -> Self::MigrationType;
 }
 
 /// A trivial struct implementing `Migration` on which adapters can build their
 /// mock migrations.
-pub struct TestMigration {
-    id: Uuid,
-    dependencies: HashSet<Uuid>,
+pub struct TestMigration<I> {
+    id: I,
+    dependencies: HashSet<I>,
 }
 
-impl TestMigration {
-    pub fn new(id: Uuid, dependencies: HashSet<Uuid>) -> TestMigration {
+impl<I> TestMigration<I> {
+    pub fn new(id: I, dependencies: HashSet<I>) -> Self {
         TestMigration { id, dependencies }
     }
 }
 
-impl Migration for TestMigration {
-    fn id(&self) -> Uuid {
-        self.id
+impl<I: Clone> Migration<I> for TestMigration<I> {
+    fn id(&self) -> I {
+        self.id.clone()
     }
 
-    fn dependencies(&self) -> HashSet<Uuid> {
+    fn dependencies(&self) -> HashSet<I> {
         self.dependencies.clone()
     }
 
@@ -58,38 +60,42 @@ impl Migration for TestMigration {
 /// ```
 #[macro_export]
 macro_rules! test_schemerz_adapter {
-    ($constructor:expr) => {
-        test_schemerz_adapter!({}, $constructor);
+    ($constructor:expr, $id_ter:expr) => {
+        test_schemerz_adapter!({}, $constructor, $id_ter);
     };
-    ($setup:stmt, $constructor:expr) => {
-        test_schemerz_adapter!($setup, $constructor,
+    ($setup:stmt, $constructor:expr, $id_ter:expr) => {
+        test_schemerz_adapter!($setup, $constructor, $id_ter,
             test_single_migration,
             test_migration_chain,
             test_multi_component_dag,
             test_branching_dag,
+            test_migration_chain_reversed,
         );
     };
-    ($setup:stmt, $constructor:expr, $($test_fn:ident),* $(,)*) => {
+    ($setup:stmt, $constructor:expr, $id_ter:expr, $($test_fn:ident),* $(,)*) => {
         $(
             #[test]
             fn $test_fn() {
                 $setup
                 let adapter = $constructor;
-                $crate::testing::$test_fn(adapter);
+                $crate::testing::$test_fn(adapter, $id_ter);
             }
         )*
     }
 }
 
 /// Test the application and reversion of a singleton migration.
-pub fn test_single_migration<A: TestAdapter>(adapter: A) {
-    let migration1 = A::mock(
-        Uuid::parse_str("bc960dc8-0e4a-4182-a62a-8e776d1e2b30").unwrap(),
-        HashSet::new(),
-    );
+pub fn test_single_migration<I, A, T>(adapter: A, mut id_iter: T)
+where
+    I: Clone + FromStr + Debug + Display + Hash + Eq,
+    I::Err: Debug,
+    A: TestAdapter<I>,
+    T: Iterator<Item = I>,
+{
+    let migration1 = A::mock(id_iter.next().unwrap(), HashSet::new());
     let uuid1 = migration1.id();
 
-    let mut migrator: Migrator<A> = Migrator::new(adapter);
+    let mut migrator: Migrator<I, A> = Migrator::new(adapter);
 
     migrator
         .register(migration1)
@@ -113,17 +119,20 @@ pub fn test_single_migration<A: TestAdapter>(adapter: A) {
 
 /// Test the partial application and reversion of a chain of three dependent
 /// migrations.
-pub fn test_migration_chain<A: TestAdapter>(adapter: A) {
-    let migration1 = A::mock(
-        Uuid::parse_str("bc960dc8-0e4a-4182-a62a-8e776d1e2b30").unwrap(),
-        HashSet::new(),
-    );
+pub fn test_migration_chain<I, A, T>(adapter: A, mut id_iter: T)
+where
+    I: Clone + FromStr + Debug + Display + Hash + Eq,
+    I::Err: Debug,
+    A: TestAdapter<I>,
+    T: Iterator<Item = I>,
+{
+    let migration1 = A::mock(id_iter.next().unwrap(), HashSet::new());
     let migration2 = A::mock(
-        Uuid::parse_str("4885e8ab-dafa-4d76-a565-2dee8b04ef60").unwrap(),
+        id_iter.next().unwrap(),
         vec![migration1.id()].into_iter().collect(),
     );
     let migration3 = A::mock(
-        Uuid::parse_str("c5d07448-851f-45e8-8fa7-4823d5250609").unwrap(),
+        id_iter.next().unwrap(),
         vec![migration2.id()].into_iter().collect(),
     );
 
@@ -134,10 +143,12 @@ pub fn test_migration_chain<A: TestAdapter>(adapter: A) {
     let mut migrator = Migrator::new(adapter);
 
     migrator
-        .register_multiple(vec![migration1, migration2, migration3])
+        .register_multiple(vec![migration1, migration2, migration3].into_iter())
         .expect("Migration registration failed");
 
-    migrator.up(Some(uuid2)).expect("Up migration failed");
+    migrator
+        .up(Some(uuid2.clone()))
+        .expect("Up migration failed");
 
     {
         let applied = migrator.adapter.applied_migrations().unwrap();
@@ -146,7 +157,9 @@ pub fn test_migration_chain<A: TestAdapter>(adapter: A) {
         assert!(!applied.contains(&uuid3));
     }
 
-    migrator.down(Some(uuid1)).expect("Down migration failed");
+    migrator
+        .down(Some(uuid1.clone()))
+        .expect("Down migration failed");
 
     {
         let applied = migrator.adapter.applied_migrations().unwrap();
@@ -157,21 +170,21 @@ pub fn test_migration_chain<A: TestAdapter>(adapter: A) {
 }
 
 /// Test that application and reversion of two DAG components are independent.
-pub fn test_multi_component_dag<A: TestAdapter>(adapter: A) {
-    let migration1 = A::mock(
-        Uuid::parse_str("bc960dc8-0e4a-4182-a62a-8e776d1e2b30").unwrap(),
-        HashSet::new(),
-    );
+pub fn test_multi_component_dag<I, A, T>(adapter: A, mut id_iter: T)
+where
+    I: Clone + FromStr + Debug + Display + Hash + Eq,
+    I::Err: Debug,
+    A: TestAdapter<I>,
+    T: Iterator<Item = I>,
+{
+    let migration1 = A::mock(id_iter.next().unwrap(), HashSet::new());
     let migration2 = A::mock(
-        Uuid::parse_str("4885e8ab-dafa-4d76-a565-2dee8b04ef60").unwrap(),
+        id_iter.next().unwrap(),
         vec![migration1.id()].into_iter().collect(),
     );
-    let migration3 = A::mock(
-        Uuid::parse_str("c5d07448-851f-45e8-8fa7-4823d5250609").unwrap(),
-        HashSet::new(),
-    );
+    let migration3 = A::mock(id_iter.next().unwrap(), HashSet::new());
     let migration4 = A::mock(
-        Uuid::parse_str("9433a432-386f-467e-a59f-a9fb7e249767").unwrap(),
+        id_iter.next().unwrap(),
         vec![migration3.id()].into_iter().collect(),
     );
 
@@ -183,10 +196,12 @@ pub fn test_multi_component_dag<A: TestAdapter>(adapter: A) {
     let mut migrator = Migrator::new(adapter);
 
     migrator
-        .register_multiple(vec![migration1, migration2, migration3, migration4])
+        .register_multiple(vec![migration1, migration2, migration3, migration4].into_iter())
         .expect("Migration registration failed");
 
-    migrator.up(Some(uuid2)).expect("Up migration failed");
+    migrator
+        .up(Some(uuid2.clone()))
+        .expect("Up migration failed");
 
     {
         let applied = migrator.adapter.applied_migrations().unwrap();
@@ -196,7 +211,9 @@ pub fn test_multi_component_dag<A: TestAdapter>(adapter: A) {
         assert!(!applied.contains(&uuid4));
     }
 
-    migrator.down(Some(uuid1)).expect("Down migration failed");
+    migrator
+        .down(Some(uuid1.clone()))
+        .expect("Down migration failed");
 
     {
         let applied = migrator.adapter.applied_migrations().unwrap();
@@ -206,7 +223,9 @@ pub fn test_multi_component_dag<A: TestAdapter>(adapter: A) {
         assert!(!applied.contains(&uuid4));
     }
 
-    migrator.up(Some(uuid3)).expect("Up migration failed");
+    migrator
+        .up(Some(uuid3.clone()))
+        .expect("Up migration failed");
 
     {
         let applied = migrator.adapter.applied_migrations().unwrap();
@@ -238,25 +257,25 @@ pub fn test_multi_component_dag<A: TestAdapter>(adapter: A) {
 }
 
 /// Test application and reversion on a branching DAG.
-pub fn test_branching_dag<A: TestAdapter>(adapter: A) {
-    let migration1 = A::mock(
-        Uuid::parse_str("bc960dc8-0e4a-4182-a62a-8e776d1e2b30").unwrap(),
-        HashSet::new(),
-    );
-    let migration2 = A::mock(
-        Uuid::parse_str("4885e8ab-dafa-4d76-a565-2dee8b04ef60").unwrap(),
-        HashSet::new(),
-    );
+pub fn test_branching_dag<I, A, T>(adapter: A, mut id_iter: T)
+where
+    I: Clone + FromStr + Debug + Display + Hash + Eq,
+    I::Err: Debug,
+    A: TestAdapter<I>,
+    T: Iterator<Item = I>,
+{
+    let migration1 = A::mock(id_iter.next().unwrap(), HashSet::new());
+    let migration2 = A::mock(id_iter.next().unwrap(), HashSet::new());
     let migration3 = A::mock(
-        Uuid::parse_str("c5d07448-851f-45e8-8fa7-4823d5250609").unwrap(),
+        id_iter.next().unwrap(),
         vec![migration1.id(), migration2.id()].into_iter().collect(),
     );
     let migration4 = A::mock(
-        Uuid::parse_str("9433a432-386f-467e-a59f-a9fb7e249767").unwrap(),
+        id_iter.next().unwrap(),
         vec![migration3.id()].into_iter().collect(),
     );
     let migration5 = A::mock(
-        Uuid::parse_str("0940acb1-0e2e-4b99-9d69-2302a9c74524").unwrap(),
+        id_iter.next().unwrap(),
         vec![migration3.id()].into_iter().collect(),
     );
 
@@ -269,12 +288,14 @@ pub fn test_branching_dag<A: TestAdapter>(adapter: A) {
     let mut migrator = Migrator::new(adapter);
 
     migrator
-        .register_multiple(vec![
-            migration1, migration2, migration3, migration4, migration5,
-        ])
+        .register_multiple(
+            vec![migration1, migration2, migration3, migration4, migration5].into_iter(),
+        )
         .expect("Migration registration failed");
 
-    migrator.up(Some(uuid4)).expect("Up migration failed");
+    migrator
+        .up(Some(uuid4.clone()))
+        .expect("Up migration failed");
 
     {
         let applied = migrator.adapter.applied_migrations().unwrap();
@@ -285,7 +306,9 @@ pub fn test_branching_dag<A: TestAdapter>(adapter: A) {
         assert!(!applied.contains(&uuid5));
     }
 
-    migrator.down(Some(uuid1)).expect("Down migration failed");
+    migrator
+        .down(Some(uuid1.clone()))
+        .expect("Down migration failed");
 
     {
         let applied = migrator.adapter.applied_migrations().unwrap();
@@ -294,5 +317,65 @@ pub fn test_branching_dag<A: TestAdapter>(adapter: A) {
         assert!(!applied.contains(&uuid3));
         assert!(!applied.contains(&uuid4));
         assert!(!applied.contains(&uuid5));
+    }
+}
+
+/// Test the partial application and reversion of a chain of three dependent
+/// migrations, inserted in reverse order.
+pub fn test_migration_chain_reversed<I, A, T>(adapter: A, mut id_iter: T)
+where
+    I: Clone + FromStr + Debug + Display + Hash + Eq,
+    I::Err: Debug,
+    A: TestAdapter<I>,
+    T: Iterator<Item = I>,
+{
+    let migration1 = A::mock(id_iter.next().unwrap(), HashSet::new());
+    let migration2 = A::mock(
+        id_iter.next().unwrap(),
+        vec![migration1.id()].into_iter().collect(),
+    );
+    let migration3 = A::mock(
+        id_iter.next().unwrap(),
+        vec![migration2.id()].into_iter().collect(),
+    );
+
+    let uuid3 = migration3.id();
+    let uuid2 = migration2.id();
+    let uuid1 = migration1.id();
+
+    let mut migrator = Migrator::new(adapter);
+
+    migrator
+        .register(migration3)
+        .expect("Migration registration failed");
+
+    migrator
+        .register(migration2)
+        .expect("Migration registration failed");
+
+    migrator
+        .register(migration1)
+        .expect("Migration registration failed");
+
+    migrator
+        .up(Some(uuid2.clone()))
+        .expect("Up migration failed");
+
+    {
+        let applied = migrator.adapter.applied_migrations().unwrap();
+        assert!(applied.contains(&uuid1));
+        assert!(applied.contains(&uuid2));
+        assert!(!applied.contains(&uuid3));
+    }
+
+    migrator
+        .down(Some(uuid1.clone()))
+        .expect("Down migration failed");
+
+    {
+        let applied = migrator.adapter.applied_migrations().unwrap();
+        assert!(applied.contains(&uuid1));
+        assert!(!applied.contains(&uuid2));
+        assert!(!applied.contains(&uuid3));
     }
 }

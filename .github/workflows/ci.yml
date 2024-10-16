@@ -47,7 +47,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v1
       - run: cargo clippy --all-features -- -D warnings
-      - run: cargo fmt -- --check
 
   fmt:
     name: Rustfmt

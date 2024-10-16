@@ -15,12 +15,12 @@
 //! use postgres::{Client, NoTls, Transaction};
 //! use schemerz::{Migration, Migrator};
 //! use schemerz_postgres::{PostgresAdapter, PostgresAdapterError, PostgresMigration};
-//! use uuid::Uuid;
+//! use uuid::uuid;
 //!
 //! struct MyExampleMigration;
 //! migration!(
 //!     MyExampleMigration,
-//!     "4885e8ab-dafa-4d76-a565-2dee8b04ef60",
+//!     uuid!("4885e8ab-dafa-4d76-a565-2dee8b04ef60"),
 //!     [],
 //!     "An example migration without dependencies.");
 //!
@@ -61,7 +61,7 @@ use uuid::Uuid;
 use schemerz::{Adapter, Migration};
 
 /// PostgreSQL-specific trait for schema migrations.
-pub trait PostgresMigration: Migration {
+pub trait PostgresMigration: Migration<Uuid> {
     /// Apply a migration to the database using a transaction.
     fn up(&self, _transaction: &mut Transaction<'_>) -> Result<(), PostgresError> {
         Ok(())
@@ -127,8 +127,8 @@ impl<'a> PostgresAdapter<'a> {
     }
 }
 
-impl<'a> Adapter for PostgresAdapter<'a> {
-    type MigrationType = dyn PostgresMigration;
+impl<'a> Adapter<Uuid> for PostgresAdapter<'a> {
+    type MigrationType = Box<dyn PostgresMigration>;
 
     type Error = PostgresAdapterError;
 
@@ -176,10 +176,10 @@ mod tests {
     use schemerz::test_schemerz_adapter;
     use schemerz::testing::*;
 
-    impl PostgresMigration for TestMigration {}
+    impl PostgresMigration for TestMigration<Uuid> {}
 
-    impl<'a> TestAdapter for PostgresAdapter<'a> {
-        fn mock(id: Uuid, dependencies: HashSet<Uuid>) -> Box<Self::MigrationType> {
+    impl<'a> TestAdapter<Uuid> for PostgresAdapter<'a> {
+        fn mock(id: Uuid, dependencies: HashSet<Uuid>) -> Self::MigrationType {
             Box::new(TestMigration::new(id, dependencies))
         }
     }
@@ -196,7 +196,13 @@ mod tests {
         adapter
     }
 
+    fn uuid_iter() -> impl Iterator<Item = Uuid> {
+        (0..).map(|v| Uuid::from_fields(v as u32, v, v, &[0; 8]))
+    }
+
     test_schemerz_adapter!(
         let mut conn = build_test_connection(),
-        build_test_adapter(&mut conn));
+        build_test_adapter(&mut conn),
+        uuid_iter(),
+    );
 }

@@ -605,6 +605,7 @@ name = "schemerz"
 version = "0.1.0"
 dependencies = [
  "daggy",
+ "indexmap",
  "log",
  "thiserror",
  "uuid",
