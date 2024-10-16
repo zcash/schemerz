@@ -9,6 +9,7 @@ and this library adheres to Rust's notion of
 <!-- next-header -->
 ## [Unreleased]
 
+## [0.320.0] - 2024-10-16
 ### Changed
 - MSRV is now 1.77.
 - Migrated to `rusqlite 0.32`.
@@ -35,7 +36,8 @@ Initial release. The API is identical to `schemer-rusqlite 0.2.2`.
 
 
 <!-- next-url -->
-[Unreleased]: https://github.com/zcash/schemerz/compare/schemerz-rusqlite-0.310.0...HEAD
+[Unreleased]: https://github.com/zcash/schemerz/compare/schemerz-rusqlite-0.320.0...HEAD
+[0.320.0]: https://github.com/zcash/schemerz/compare/schemerz-rusqlite-0.310.0...schemerz-rusqlite-0.320.0
 [0.310.0]: https://github.com/zcash/schemerz/compare/schemerz-rusqlite-0.300.0...schemerz-rusqlite-0.310.0
 [0.300.0]: https://github.com/zcash/schemerz/compare/schemerz-rusqlite-0.291.0...schemerz-rusqlite-0.300.0
 [0.291.0]: https://github.com/zcash/schemerz/compare/schemerz-rusqlite-0.290.0...schemerz-rusqlite-0.291.0
