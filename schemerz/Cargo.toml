@@ -1,22 +1,19 @@
 [package]
 name = "schemerz"
 version = "0.2.0"
-edition = "2021"
-rust-version = "1.77"
-authors = [
-    "Jack Grigg <jack@electriccoin.co>",
-    "Kris Nuttycombe <kris@electriccoin.co>",
-]
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
 description = "A database schema migration library with DAG dependencies"
 readme = "../README.md"
+repository.workspace = true
+license.workspace = true
 keywords = ["database", "migration", "sql"]
 categories = ["database"]
-license = "MIT/Apache-2.0"
-repository = "https://github.com/zcash/schemerz"
 
 [dependencies]
 daggy = "0.8"
 log = "0.4"
-thiserror = "1.0"
-uuid = { version = "1" }
-indexmap = "1"
+thiserror = "2"
+uuid.workspace = true
+indexmap = "2"

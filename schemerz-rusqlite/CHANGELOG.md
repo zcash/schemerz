@@ -9,6 +9,27 @@ and this library adheres to Rust's notion of
 <!-- next-header -->
 ## [Unreleased]
 
+## [0.370.0] - 2025-10-26
+### Changed
+- Migrated to `rusqlite 0.37`.
+
+## [0.360.0] - 2025-10-26
+### Changed
+- Migrated to `rusqlite 0.36`.
+
+## [0.350.0] - 2025-10-26
+### Changed
+- Migrated to `rusqlite 0.35`.
+
+## [0.340.0] - 2025-10-26
+### Changed
+- Migrated to `rusqlite 0.34`.
+
+## [0.330.0] - 2025-10-26
+### Changed
+- MSRV is now 1.82.
+- Migrated to `rusqlite 0.33`.
+
 ## [0.320.0] - 2024-10-16
 ### Changed
 - MSRV is now 1.77.
@@ -36,7 +57,12 @@ Initial release. The API is identical to `schemer-rusqlite 0.2.2`.
 
 
 <!-- next-url -->
-[Unreleased]: https://github.com/zcash/schemerz/compare/schemerz-rusqlite-0.320.0...HEAD
+[Unreleased]: https://github.com/zcash/schemerz/compare/schemerz-rusqlite-0.370.0...HEAD
+[0.370.0]: https://github.com/zcash/schemerz/compare/schemerz-rusqlite-0.360.0...schemerz-rusqlite-0.370.0
+[0.360.0]: https://github.com/zcash/schemerz/compare/schemerz-rusqlite-0.350.0...schemerz-rusqlite-0.360.0
+[0.350.0]: https://github.com/zcash/schemerz/compare/schemerz-rusqlite-0.340.0...schemerz-rusqlite-0.350.0
+[0.340.0]: https://github.com/zcash/schemerz/compare/schemerz-rusqlite-0.330.0...schemerz-rusqlite-0.340.0
+[0.330.0]: https://github.com/zcash/schemerz/compare/schemerz-rusqlite-0.320.0...schemerz-rusqlite-0.330.0
 [0.320.0]: https://github.com/zcash/schemerz/compare/schemerz-rusqlite-0.310.0...schemerz-rusqlite-0.320.0
 [0.310.0]: https://github.com/zcash/schemerz/compare/schemerz-rusqlite-0.300.0...schemerz-rusqlite-0.310.0
 [0.300.0]: https://github.com/zcash/schemerz/compare/schemerz-rusqlite-0.291.0...schemerz-rusqlite-0.300.0
