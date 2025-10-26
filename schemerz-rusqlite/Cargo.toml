@@ -12,7 +12,7 @@ keywords = ["database", "migration", "sqlite", "sql"]
 categories = ["database"]
 
 [dependencies]
+rusqlite = "0.33"
 uuid.workspace = true
-rusqlite = "0.32"
 
 schemerz.workspace = true
