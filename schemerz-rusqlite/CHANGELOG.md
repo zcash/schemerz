@@ -9,6 +9,9 @@ and this library adheres to Rust's notion of
 <!-- next-header -->
 ## [Unreleased]
 
+### Changed
+- Migrated to `rusqlite 0.34`.
+
 ## [0.330.0] - 2025-10-26
 ### Changed
 - MSRV is now 1.82.
