@@ -5,3 +5,20 @@ members = [
     "schemerz-postgres",
     "schemerz-rusqlite",
 ]
+
+[workspace.package]
+authors = [
+    "Jack Grigg <jack@electriccoin.co>",
+    "Kris Nuttycombe <kris@electriccoin.co>",
+]
+edition = "2021"
+rust-version = "1.77"
+repository = "https://github.com/zcash/schemerz"
+license = "MIT OR Apache-2.0"
+
+[workspace.dependencies]
+# Intra-workspace dependencies
+schemerz = { version = "0.2", path = "schemerz" }
+
+# Common dependencies
+uuid = "1"
