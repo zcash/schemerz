@@ -12,7 +12,7 @@ authors = [
     "Kris Nuttycombe <kris@electriccoin.co>",
 ]
 edition = "2021"
-rust-version = "1.77"
+rust-version = "1.82"
 repository = "https://github.com/zcash/schemerz"
 license = "MIT OR Apache-2.0"
 
