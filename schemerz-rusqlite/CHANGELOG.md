@@ -9,6 +9,9 @@ and this library adheres to Rust's notion of
 <!-- next-header -->
 ## [Unreleased]
 
+### Changed
+- Migrated to `rusqlite 0.37`.
+
 ## [0.360.0] - 2025-10-26
 ### Changed
 - Migrated to `rusqlite 0.36`.
