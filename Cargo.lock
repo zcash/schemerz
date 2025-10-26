@@ -557,7 +557,7 @@ dependencies = [
 
 [[package]]
 name = "schemerz-rusqlite"
-version = "0.320.0"
+version = "0.330.0"
 dependencies = [
  "rusqlite",
  "schemerz",
