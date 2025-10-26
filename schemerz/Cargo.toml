@@ -17,6 +17,6 @@ repository = "https://github.com/zcash/schemerz"
 [dependencies]
 daggy = "0.8"
 log = "0.4"
-thiserror = "1.0"
+thiserror = "2"
 uuid = { version = "1" }
-indexmap = "1"
+indexmap = "2"
