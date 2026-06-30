@@ -365,7 +365,7 @@ where
                 continue;
             }
 
-            info!("Applying migration {}", id);
+            info!("Applying migration {} ({})", id, migration.description());
             self.adapter
                 .apply_migration(migration)
                 .map_err(|e| MigratorError::Migration {
@@ -413,7 +413,7 @@ where
                 continue;
             }
 
-            info!("Reverting migration {}", id);
+            info!("Reverting migration {} ({})", id, migration.description());
             self.adapter
                 .revert_migration(migration)
                 .map_err(|e| MigratorError::Migration {
