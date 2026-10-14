@@ -12,7 +12,7 @@ keywords = ["database", "migration", "sql"]
 categories = ["database"]
 
 [dependencies]
-daggy = "0.8"
+daggy = "0.9"
 log = "0.4"
 thiserror = "2"
 uuid.workspace = true
