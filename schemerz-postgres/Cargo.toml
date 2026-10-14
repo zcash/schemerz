@@ -1,6 +1,6 @@
 [package]
 name = "schemerz-postgres"
-version = "0.191.0"
+version = "0.192.0"
 authors.workspace = true
 edition.workspace = true
 rust-version.workspace = true
