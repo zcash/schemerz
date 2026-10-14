@@ -18,7 +18,7 @@ license = "MIT OR Apache-2.0"
 
 [workspace.dependencies]
 # Intra-workspace dependencies
-schemerz = { version = "0.2", path = "schemerz" }
+schemerz = { version = "0.3", path = "schemerz" }
 
 # Common dependencies
 uuid = "1"

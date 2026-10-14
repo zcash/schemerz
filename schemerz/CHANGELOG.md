@@ -9,6 +9,7 @@ and this library adheres to Rust's notion of
 <!-- next-header -->
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-14
 ### Changed
 - MSRV is now 1.82.
 
@@ -74,6 +75,7 @@ Initial release. The API is identical to `schemer 0.2.1`.
 
 
 <!-- next-url -->
-[Unreleased]: https://github.com/zcash/schemerz/compare/schemerz-0.2.0...HEAD
+[Unreleased]: https://github.com/zcash/schemerz/compare/schemerz-0.3.0...HEAD
+[0.3.0]: https://github.com/zcash/schemerz/compare/schemerz-0.2.0...schemerz-0.3.0
 [0.2.0]: https://github.com/zcash/schemerz/compare/schemerz-0.1.0...schemerz-0.2.0
 [0.1.0]: https://github.com/zcash/schemerz/compare/1bfd952b035b87a39df955376e0bdddf98eb6c99...schemerz-0.1.0
