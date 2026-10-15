@@ -1,6 +1,6 @@
 [package]
 name = "schemerz-rusqlite"
-version = "0.370.0"
+version = "0.371.0"
 authors.workspace = true
 edition.workspace = true
 rust-version.workspace = true
