@@ -1,9 +1,9 @@
 [package]
 name = "schemerz-rusqlite"
-version = "0.371.0"
+version = "0.411.0"
 authors.workspace = true
 edition.workspace = true
-rust-version.workspace = true
+rust-version = "1.89"
 description = "SQLite3 adapter for the Schemerz database schema migration library "
 readme = "../README.md"
 repository.workspace = true
@@ -12,7 +12,7 @@ keywords = ["database", "migration", "sqlite", "sql"]
 categories = ["database"]
 
 [dependencies]
-rusqlite = "0.37"
+rusqlite = "0.41"
 uuid.workspace = true
 
 schemerz.workspace = true
