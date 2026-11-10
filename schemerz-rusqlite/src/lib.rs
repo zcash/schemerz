@@ -227,4 +227,55 @@ mod tests {
         build_test_adapter(&mut conn),
         uuid_iter(),
     );
+    struct SqlMigration;
+    schemerz::migration!(
+        Uuid,
+        SqlMigration,
+        Uuid::from_u128(1),
+        [],
+        "Create durable data"
+    );
+
+    impl RusqliteMigration for SqlMigration {
+        type Error = RusqliteError;
+
+        fn up(&self, tx: &Transaction<'_>) -> Result<(), Self::Error> {
+            tx.execute_batch("CREATE TABLE data (value BLOB); INSERT INTO data VALUES (x'00ff');")
+        }
+
+        fn down(&self, tx: &Transaction<'_>) -> Result<(), Self::Error> {
+            tx.execute_batch("DROP TABLE data;")?;
+            // Simulate failure after a schema mutation, before metadata removal.
+            Err(RusqliteError::InvalidQuery)
+        }
+    }
+
+    #[test]
+    fn migration_metadata_and_data_commit_and_rollback_together() {
+        let mut conn = build_test_connection();
+        let migration: Box<dyn RusqliteMigration<Error = RusqliteError>> = Box::new(SqlMigration);
+        {
+            let mut adapter = build_test_adapter(&mut conn);
+            adapter.apply_migration(&migration).unwrap();
+            assert!(adapter
+                .applied_migrations()
+                .unwrap()
+                .contains(&migration.id()));
+            assert!(adapter.revert_migration(&migration).is_err());
+            assert!(adapter
+                .applied_migrations()
+                .unwrap()
+                .contains(&migration.id()));
+        }
+        assert_eq!(
+            conn.query_row("SELECT value FROM data", [], |r| r.get::<_, Vec<u8>>(0))
+                .unwrap(),
+            [0, 255]
+        );
+        assert_eq!(
+            conn.query_row("PRAGMA integrity_check", [], |r| r.get::<_, String>(0))
+                .unwrap(),
+            "ok"
+        );
+    }
 }
